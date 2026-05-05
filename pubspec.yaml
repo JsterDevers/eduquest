@@ -1,0 +1,62 @@
+name: eduquest
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # --- DATABASE (FULL OFFLINE & AUTO-SAVE) ---
+  isar: ^3.1.0+1              # The high-speed NoSQL database
+  isar_flutter_libs: ^3.1.0+1 # Required binaries for Android/iOS
+  path_provider: ^2.1.2       # Finds the correct storage path on the phone
+
+  # --- OFFLINE AI & UTILS ---
+  google_ml_kit: ^0.16.0      # For offline AI processing (Text/Image)
+  connectivity_plus: ^5.0.2   # Detects internet for the "eventual" cloud sync
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  analyzer: ^5.13.0
+
+
+  # --- CODE GENERATORS (FOR DATABASE) ---
+  isar_generator: ^3.1.0+1    # Generates the 'player.g.dart' file
+  build_runner: ^2.4.8        # The tool that runs the generators
+
+# 1. APP ICON CONFIGURATION
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logo.png" 
+  min_sdk_android: 21
+  adaptive_icon_background: "#5E3A85" 
+  adaptive_icon_foreground: "assets/logo.png" 
+
+# 2. NATIVE SPLASH SCREEN CONFIGURATION
+flutter_native_splash:
+  color: "#1A0B2E" 
+  image: assets/logo.png
+  android_12:
+    image: assets/logo.png
+    color: "#1A0B2E"
+
+flutter:
+  uses-material-design: true
+
+  # --- ASSET REGISTRY ---
+  assets:
+    - assets/background.png    # The main RPG background
+    - assets/logo.png          # The wizard hat logo
+    - assets/navbar.png        # The pixel-art bottom nav
+    - assets/hero_knight.png
+    - assets/hero_mage.png
+    - assets/library.png
