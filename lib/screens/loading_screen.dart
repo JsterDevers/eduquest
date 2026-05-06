@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'dart:math' as math;
-import 'start_adventure_page.dart'; // Rerouted to Start Adventure
+import 'start_adventure_page.dart';
 
 class EduQuestSplashScreen extends StatefulWidget {
   const EduQuestSplashScreen({super.key});
@@ -12,19 +13,23 @@ class EduQuestSplashScreen extends StatefulWidget {
 class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
     
-    // 1. Setup the Dot Animation
+    // 1. Trigger the 3-second jingle
+    _playStartupSound();
+
+    // 2. Set the Dot Animation to exactly 3 seconds to match the audio
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     )..repeat();
 
-    // 2. CORRECTED FLOW: Loading -> Start Adventure
-    Future.delayed(const Duration(seconds: 4), () {
+    // 3. Set the Navigation Delay to exactly 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -34,30 +39,39 @@ class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
     });
   }
 
+  Future<void> _playStartupSound() async {
+    try {
+      await _audioPlayer.play(AssetSource('Startupsound.mp3'));
+    } catch (e) {
+      debugPrint("Startup audio failed: $e");
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E), // Fallback to prevent black screen
+      backgroundColor: Colors.black, // Professional black background
       body: SizedBox.expand(
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // BACKGROUND LAYER
+            // BACKGROUND IMAGE
             Positioned.fill(
               child: Image.asset(
                 'assets/background.png',
                 fit: BoxFit.cover,
-                filterQuality: FilterQuality.none, // Keeps pixel art sharp
+                filterQuality: FilterQuality.none, 
               ),
             ),
 
-            // ANIMATED FADING DOTS
+            // ANIMATED DOTS (Synced to 3 seconds)
             Transform.translate(
               offset: const Offset(0, 145.0), 
               child: AnimatedBuilder(
@@ -85,14 +99,13 @@ class DotCirclePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     const radius = 65.0; 
-    const dotCount = 12; // Optimized count for performance
+    const dotCount = 12;
 
     for (int i = 0; i < dotCount; i++) {
       final double angle = (i * 2 * math.pi / dotCount) + (progress * 2 * math.pi);
       double opacity = (i / dotCount); 
       
       final paint = Paint()
-        // Using withOpacity for broader emulator compatibility
         ..color = const Color(0xFFB983FF).withValues(alpha: opacity);
 
       final x = center.dx + radius * math.cos(angle);

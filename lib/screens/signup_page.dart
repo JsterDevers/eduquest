@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // REQUIRED for sound and haptics
+import 'package:flutter/services.dart'; 
 import 'dart:math';
 import '../services/database_service.dart';
 import '../models/player.dart';
@@ -18,14 +18,11 @@ class _SignupPageState extends State<SignupPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _errorMessage;
-
-  // Animation states for the bottom button
   bool _isAlreadyPressed = false;
 
-  // HELPER: Play interaction feedback
   void _playInteractionEffect() {
-    SystemSound.play(SystemSoundType.click); // Audible click
-    HapticFeedback.lightImpact();           // Physical vibration
+    SystemSound.play(SystemSoundType.click);
+    HapticFeedback.lightImpact();
   }
 
   String _generateScrollCode() {
@@ -34,10 +31,10 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<void> _handleSignup() async {
-    _playInteractionEffect(); // Play sound immediately on click
+    _playInteractionEffect(); 
 
     if (_usernameController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
-      setState(() => _errorMessage = "FIELDS CANNOT BE EMPTY!");
+      setState(() => _errorMessage = "FIELDS EMPTY!"); // Shortened for pixel font width
       return;
     }
 
@@ -82,14 +79,28 @@ class _SignupPageState extends State<SignupPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("HERO REGISTRATION", 
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                  const Text(
+                    "HERO REGISTRATION", 
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P', // APPLIED
+                      color: Colors.white, 
+                      fontSize: 14, 
+                      letterSpacing: 1,
+                    ),
+                  ),
                   const SizedBox(height: 40),
 
                   if (_errorMessage != null) 
                     Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        _errorMessage!, 
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P', // APPLIED
+                          color: Colors.redAccent, 
+                          fontSize: 8,
+                        ),
+                      ),
                     ),
 
                   _buildPixelTextField(controller: _usernameController, hintText: "USERNAME"),
@@ -97,16 +108,14 @@ class _SignupPageState extends State<SignupPage> {
                   _buildPixelTextField(controller: _passwordController, hintText: "PASSWORD", obscure: true),
                   const SizedBox(height: 30),
 
-                  // START QUEST BUTTON
                   PixelButton(
-                    text: "START YOUR QUEST", 
+                    text: "START QUEST", // Shortened slightly to fit the wide font
                     color: Colors.green,
                     onTap: _handleSignup,
                   ),
 
                   const SizedBox(height: 30),
 
-                  // BOXED "ALREADY HAVE AN ACCOUNT" BUTTON
                   GestureDetector(
                     onTapDown: (_) {
                       setState(() => _isAlreadyPressed = true);
@@ -126,15 +135,22 @@ class _SignupPageState extends State<SignupPage> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.5),
+                          color: Colors.black.withOpacity(0.5),
                           border: Border.all(color: Colors.amber, width: 3),
                           boxShadow: [
                             if (!_isAlreadyPressed)
                               const BoxShadow(color: Colors.black54, offset: Offset(4, 4))
                           ],
                         ),
-                        child: const Text("ALREADY HAVE AN ACCOUNT?",
-                          style: TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "ALREADY HAVE AN ACCOUNT?",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'PressStart2P', // APPLIED
+                            color: Colors.amber, 
+                            fontSize: 7, // Reduced for multi-line safety
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -150,17 +166,25 @@ class _SignupPageState extends State<SignupPage> {
   Widget _buildPixelTextField({required TextEditingController controller, required String hintText, bool obscure = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: Colors.black.withOpacity(0.6),
         border: Border.all(color: Colors.white, width: 3),
       ),
       child: TextField(
         controller: controller,
         obscureText: obscure,
-        onTap: () => HapticFeedback.selectionClick(), // Sound/Vibration on tap
-        style: const TextStyle(color: Colors.white, letterSpacing: 2),
+        onTap: () => HapticFeedback.selectionClick(),
+        style: const TextStyle(
+          fontFamily: 'PressStart2P', // APPLIED TO INPUT
+          color: Colors.white, 
+          fontSize: 10,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Colors.white24, fontSize: 12),
+          hintStyle: const TextStyle(
+            fontFamily: 'PressStart2P', // APPLIED TO HINT
+            color: Colors.white24, 
+            fontSize: 10,
+          ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           border: InputBorder.none,
         ),
@@ -169,20 +193,43 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   void _showScrollResult(BuildContext context, String code) {
-    _playInteractionEffect(); // Sound when dialog appears
+    _playInteractionEffect();
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2D1B4E),
         shape: const RoundedRectangleBorder(side: BorderSide(color: Colors.yellow, width: 4)),
-        title: const Text("📜 YOUR RECOVERY SCROLL", style: TextStyle(color: Colors.yellow, fontSize: 14)),
+        title: const Text(
+          "RECOVERY CODE", 
+          style: TextStyle(
+            fontFamily: 'PressStart2P', // APPLIED
+            color: Colors.yellow, 
+            fontSize: 12,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("SAVE THIS CODE TO RESTORE YOUR ACCOUNT.", style: TextStyle(color: Colors.white, fontSize: 10)),
+            const Text(
+              "SAVE THIS CODE TO RESTORE ACCESS.", 
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'PressStart2P', // APPLIED
+                color: Colors.white, 
+                fontSize: 8,
+              ),
+            ),
             const SizedBox(height: 20),
-            SelectableText(code, style: const TextStyle(color: Colors.greenAccent, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 5)),
+            SelectableText(
+              code, 
+              style: const TextStyle(
+                fontFamily: 'PressStart2P', // APPLIED
+                color: Colors.greenAccent, 
+                fontSize: 18, // Reduced to ensure 8 characters fit
+                letterSpacing: 2,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -195,7 +242,14 @@ class _SignupPageState extends State<SignupPage> {
                 (route) => false
               );
             },
-            child: const Text("I HAVE SAVED IT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              "I SAVED IT", 
+              style: TextStyle(
+                fontFamily: 'PressStart2P', // APPLIED
+                color: Colors.white, 
+                fontSize: 10,
+              ),
+            ),
           ),
         ],
       ),

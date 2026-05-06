@@ -61,4 +61,11 @@ flutter:
     - assets/hero_knight.png
     - assets/hero_mage.png
     - assets/library.png
+    - assets/PressStart2P.ttf
     - assets/Startupsound.mp3
+
+    # ADD THIS SECTION BELOW ASSETS
+  fonts:
+    - family: PressStart2P
+      fonts:
+        - asset: assets/PressStart2P.ttf

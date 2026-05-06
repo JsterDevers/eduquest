@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // For sounds and haptics
+import 'package:flutter/services.dart';
 import 'signup_page.dart';
 
 class StartAdventurePage extends StatefulWidget {
@@ -16,14 +16,11 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
   @override
   void initState() {
     super.initState();
-
-    // 1. Controller for the Title Floating (Up and Down)
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    // 2. Controller for the "PRESS START" Blinking
     _blinkController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -38,10 +35,8 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
   }
 
   void _handleStart() {
-    // Interaction effects
     SystemSound.play(SystemSoundType.click);
     HapticFeedback.mediumImpact();
-
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SignupPage()),
@@ -54,7 +49,7 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
       backgroundColor: const Color(0xFF1A1A2E),
       body: Stack(
         children: [
-          // 1. THE SHARED BACKGROUND
+          // Background Layer
           Positioned.fill(
             child: Image.asset(
               'assets/library.png',
@@ -63,37 +58,51 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
             ),
           ),
 
-          // 2. THE UI OVERLAY
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // FLOATING TITLE
+                // 3D PIXELATED FLOATING TITLE
                 AnimatedBuilder(
                   animation: _floatController,
                   builder: (context, child) {
                     return Transform.translate(
-                      // Moves up and down by 15 pixels
-                      offset: Offset(0, -15 * _floatController.value), 
+                      offset: Offset(0, -10 * _floatController.value),
                       child: child,
                     );
                   },
-                  child: const Text(
+                  child: Text(
                     "EDUQUEST",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
+                      fontFamily: 'PressStart2P', 
                       color: Colors.white,
-                      fontSize: 48,
+                      fontSize: 36, // PERFECTED SIZE: Smaller to fit screen nicely
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 4,
+                      letterSpacing: -2, // Adjusted so letters don't overlap weirdly
                       shadows: [
-                        Shadow(color: Colors.black, offset: Offset(4, 4)),
-                        Shadow(color: Colors.purple, blurRadius: 20),
+                        // Sharp Black Outline
+                        const Shadow(offset: Offset(-2, -2), color: Colors.black),
+                        const Shadow(offset: Offset(2, -2), color: Colors.black),
+                        const Shadow(offset: Offset(-2, 2), color: Colors.black),
+                        const Shadow(offset: Offset(2, 2), color: Colors.black),
+                        
+                        // Solid 3D Extrusion (Reduced to 6 layers for better proportion)
+                        const Shadow(offset: Offset(1, 1), color: Color(0xFF4A2B11)),
+                        const Shadow(offset: Offset(2, 2), color: Color(0xFF4A2B11)),
+                        const Shadow(offset: Offset(3, 3), color: Color(0xFF4A2B11)),
+                        const Shadow(offset: Offset(4, 4), color: Color(0xFF4A2B11)),
+                        const Shadow(offset: Offset(5, 5), color: Color(0xFF4A2B11)),
+                        const Shadow(offset: Offset(6, 6), color: Color(0xFF4A2B11)),
+                        
+                        // Final Deep Background Shadow
+                        const Shadow(offset: Offset(10, 10), color: Colors.black54),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 150),
+                const SizedBox(height: 80),
 
                 // BLINKING PRESS START
                 GestureDetector(
@@ -103,10 +112,10 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
                     child: const Text(
                       "PRESS START",
                       style: TextStyle(
+                        fontFamily: 'PressStart2P',
                         color: Colors.yellowAccent,
-                        fontSize: 24,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
                         shadows: [
                           Shadow(color: Colors.black, offset: Offset(2, 2)),
                         ],
