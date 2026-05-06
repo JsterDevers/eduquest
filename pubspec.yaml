@@ -20,6 +20,7 @@ dependencies:
   # --- OFFLINE AI & UTILS ---
   google_ml_kit: ^0.16.0      # For offline AI processing (Text/Image)
   connectivity_plus: ^5.0.2   # Detects internet for the "eventual" cloud sync
+  audioplayers: ^6.6.0
 
 dev_dependencies:
   flutter_test:
@@ -54,9 +55,10 @@ flutter:
 
   # --- ASSET REGISTRY ---
   assets:
-    - assets/background.png    # The main RPG background
-    - assets/logo.png          # The wizard hat logo
-    - assets/navbar.png        # The pixel-art bottom nav
+    - assets/background.png    
+    - assets/logo.png          
+    - assets/navbar.png        
     - assets/hero_knight.png
     - assets/hero_mage.png
     - assets/library.png
+    - assets/Startupsound.mp3
