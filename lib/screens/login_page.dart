@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // REQUIRED for sound/haptics
 import 'dart:math' as math;
 import '../services/database_service.dart';
 import '../widgets/pixel_button.dart';
@@ -19,7 +20,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    // Keeps the magical library objects moving
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -34,27 +34,33 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     super.dispose();
   }
 
+  // HELPER: Professional interaction feedback
+  void _playInteractionEffect() {
+    SystemSound.play(SystemSoundType.click);
+    HapticFeedback.lightImpact();
+  }
+
   Future<void> _handleLogin() async {
+    _playInteractionEffect(); // Sound on button click
+    
     final username = _userController.text.trim();
     final password = _passController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = "CREDENTIALS REQUIRED!");
+      setState(() => _errorMessage = "NEED KEYS!"); // Shortened for pixel width
       return;
     }
 
-    // Call database to verify credentials
     final player = await DatabaseService.verifyPlayer(username, password);
 
     if (player != null && mounted) {
-      // Clear the stack and go to the Home Page
       Navigator.pushAndRemoveUntil(
         context, 
         MaterialPageRoute(builder: (context) => const HomePage()), 
         (route) => false
       );
     } else if (mounted) {
-      setState(() => _errorMessage = "HERO NOT FOUND OR WRONG KEY!");
+      setState(() => _errorMessage = "WRONG CREDENTIALS!"); // Shortened for pixel width
     }
   }
 
@@ -64,40 +70,50 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       backgroundColor: const Color(0xFF1A0B2E),
       body: Stack(
         children: [
-          // 1. THE SHARED LIBRARY BACKGROUND
+          // 1. BACKGROUND
           Positioned.fill(
             child: Image.asset(
               'assets/library.png', 
               fit: BoxFit.cover, 
-              filterQuality: FilterQuality.none, // Keeps pixel art sharp
+              filterQuality: FilterQuality.none,
             ),
           ),
 
-          // 2. FLOATING MAGIC OBJECTS
+          // 2. MAGIC OBJECTS
           _buildFloatingBook(top: 100, right: 50, delay: 0.0),
           _buildFloatingBook(bottom: 150, left: 40, delay: 0.5),
 
-          // 3. LOGIN FORM
+          // 3. FORM
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 40.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("HERO LOGIN", 
+                  const Text(
+                    "HERO LOGIN", 
                     style: TextStyle(
+                      fontFamily: 'PressStart2P', // APPLIED
                       color: Colors.white, 
                       fontSize: 18, 
-                      fontWeight: FontWeight.bold, 
-                      letterSpacing: 3,
-                      shadows: [Shadow(color: Colors.black, offset: Offset(2, 2))],
-                    )),
+                      letterSpacing: 2,
+                      shadows: [Shadow(color: Colors.black, offset: Offset(3, 3))],
+                    ),
+                  ),
                   const SizedBox(height: 40),
 
                   if (_errorMessage != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 15),
-                      child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        _errorMessage!, 
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P', // APPLIED
+                          color: Colors.redAccent, 
+                          fontSize: 8,
+                        ),
+                      ),
                     ),
 
                   _buildPixelField(_userController, "USERNAME"),
@@ -105,9 +121,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   _buildPixelField(_passController, "PASSWORD", obscure: true),
                   const SizedBox(height: 30),
 
-                  // Updated to use your custom PixelButton
                   PixelButton(
-                    text: "ENTER CHRONICLES",
+                    text: "ENTER WORLD", // Shortened slightly
                     color: Colors.blueAccent,
                     onTap: _handleLogin,
                   ),
@@ -116,14 +131,19 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
                   // BACK NAVIGATION
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Text("GO BACK",
+                    onTap: () {
+                      _playInteractionEffect();
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "GO BACK",
                       style: TextStyle(
+                        fontFamily: 'PressStart2P', // APPLIED
                         color: Colors.white60, 
-                        fontSize: 10, 
-                        fontWeight: FontWeight.bold,
+                        fontSize: 8, 
                         decoration: TextDecoration.underline,
-                      )),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -137,16 +157,25 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   Widget _buildPixelField(TextEditingController controller, String hint, {bool obscure = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
-        border: Border.all(color: Colors.white, width: 2),
+        color: Colors.black.withValues(alpha: 0.6),
+        border: Border.all(color: Colors.white, width: 3),
       ),
       child: TextField(
         controller: controller,
         obscureText: obscure,
-        style: const TextStyle(color: Colors.white, letterSpacing: 2),
+        onTap: () => HapticFeedback.selectionClick(), // Physical "tick" when tapping field
+        style: const TextStyle(
+          fontFamily: 'PressStart2P', // APPLIED TO INPUT
+          color: Colors.white, 
+          fontSize: 10,
+        ),
         decoration: InputDecoration(
           hintText: hint, 
-          hintStyle: const TextStyle(color: Colors.white24, fontSize: 12),
+          hintStyle: const TextStyle(
+            fontFamily: 'PressStart2P', // APPLIED TO HINT
+            color: Colors.white24, 
+            fontSize: 10,
+          ),
           border: InputBorder.none, 
           contentPadding: const EdgeInsets.all(15)
         ),
@@ -163,7 +192,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           double offset = math.sin((_floatController.value + delay) * math.pi * 2) * 15;
           return Transform.translate(
             offset: Offset(0, offset),
-            child: Icon(Icons.auto_stories, color: const Color(0xFFB983FF).withOpacity(0.3), size: 35),
+            child: const Icon(Icons.auto_stories, color: Color(0x4DB983FF), size: 35),
           );
         },
       ),

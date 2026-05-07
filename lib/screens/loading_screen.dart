@@ -19,17 +19,19 @@ class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
   void initState() {
     super.initState();
     
-    // 1. Trigger the 3-second jingle
+    // 1. Play the startup sound immediately
     _playStartupSound();
 
-    // 2. Set the Dot Animation to exactly 3 seconds to match the audio
+    // 2. Dots now complete a full cycle every 5 seconds
+    // This makes the animation smoother and less "rushed"
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 5),
     )..repeat();
 
-    // 3. Set the Navigation Delay to exactly 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
+    // 3. Navigation Delay extended to 5 seconds
+    // This provides a buffer for the Isar DB to initialize in main.dart
+    Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -41,6 +43,8 @@ class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
 
   Future<void> _playStartupSound() async {
     try {
+      // Force volume to 1.0 (Maximum)
+      await _audioPlayer.setVolume(1.0);
       await _audioPlayer.play(AssetSource('Startupsound.mp3'));
     } catch (e) {
       debugPrint("Startup audio failed: $e");
@@ -57,7 +61,7 @@ class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Professional black background
+      backgroundColor: Colors.black, 
       body: SizedBox.expand(
         child: Stack(
           alignment: Alignment.center,
@@ -71,7 +75,7 @@ class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
               ),
             ),
 
-            // ANIMATED DOTS (Synced to 3 seconds)
+            // ANIMATED DOTS (Synced to 5 seconds)
             Transform.translate(
               offset: const Offset(0, 145.0), 
               child: AnimatedBuilder(
