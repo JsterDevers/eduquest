@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // REQUIRED for sound/haptics
+import 'package:flutter/services.dart'; 
 import 'dart:math' as math;
 import '../services/database_service.dart';
-import '../widgets/pixel_button.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,7 +14,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   final _userController = TextEditingController();
   final _passController = TextEditingController();
   late AnimationController _floatController;
+  
   String? _errorMessage;
+  bool _obscurePassword = true; // State for password eye toggle
+  bool _isLoginPressed = false; // State for button scaling animation
+  bool _isBackPressed = false;  // State for back button scaling animation
 
   @override
   void initState() {
@@ -41,13 +44,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Future<void> _handleLogin() async {
-    _playInteractionEffect(); // Sound on button click
+    _playInteractionEffect(); 
     
     final username = _userController.text.trim();
     final password = _passController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = "NEED KEYS!"); // Shortened for pixel width
+      setState(() => _errorMessage = "NEED KEYS!"); 
       return;
     }
 
@@ -60,7 +63,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         (route) => false
       );
     } else if (mounted) {
-      setState(() => _errorMessage = "WRONG CREDENTIALS!"); // Shortened for pixel width
+      setState(() => _errorMessage = "HERO NOT FOUND!"); 
     }
   }
 
@@ -79,72 +82,193 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             ),
           ),
 
-          // 2. MAGIC OBJECTS
+          // 2. MAGIC FLOATING OBJECTS
           _buildFloatingBook(top: 100, right: 50, delay: 0.0),
           _buildFloatingBook(bottom: 150, left: 40, delay: 0.5),
 
-          // 3. FORM
+          // 3. SECURE PARCHMENT FORM
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 40.0),
+              padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "HERO LOGIN", 
-                    style: TextStyle(
-                      fontFamily: 'PressStart2P', // APPLIED
-                      color: Colors.white, 
-                      fontSize: 18, 
-                      letterSpacing: 2,
-                      shadows: [Shadow(color: Colors.black, offset: Offset(3, 3))],
-                    ),
-                  ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 50),
 
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 15),
-                      child: Text(
-                        _errorMessage!, 
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'PressStart2P', // APPLIED
-                          color: Colors.redAccent, 
-                          fontSize: 8,
+                  // OVERLAPPING CARD STACK
+                  Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      // MAIN PARCHMENT CONTAINER
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5E2C4), // Warm pixel cream/beige
+                          border: Border.all(color: const Color(0xFF381B4B), width: 5),
+                          borderRadius: BorderRadius.zero, 
+                          boxShadow: const [
+                            BoxShadow(color: Color(0xCC000000), offset: Offset(6, 6)),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10),
+
+                            // ERROR BOX
+                            if (_errorMessage != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Center(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(
+                                      fontFamily: 'PressStart2P',
+                                      color: Colors.redAccent,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                            // USERNAME INPUT FIELD
+                            _buildFieldLabel("USERNAME", Icons.person),
+                            _buildPixelField(
+                              controller: _userController,
+                              hintText: "ENTER USERNAME",
+                            ),
+                            const SizedBox(height: 16),
+
+                            // PASSWORD INPUT FIELD WITH TOGGLE EYE
+                            _buildFieldLabel("PASSWORD", Icons.lock),
+                            _buildPixelField(
+                              controller: _passController,
+                              hintText: "ENTER PASSWORD",
+                              obscure: _obscurePassword,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                  color: const Color(0xFF432A5E),
+                                  size: 16,
+                                ),
+                                onPressed: () {
+                                  _playInteractionEffect();
+                                  setState(() => _obscurePassword = !_obscurePassword);
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+
+                            // INTERACTIVE BLUE ACTION BUTTON
+                            GestureDetector(
+                              onTapDown: (_) {
+                                setState(() => _isLoginPressed = true);
+                                _playInteractionEffect();
+                              },
+                              onTapUp: (_) => setState(() => _isLoginPressed = false),
+                              onTapCancel: () => setState(() => _isLoginPressed = false),
+                              onTap: _handleSignupCheck,
+                              child: AnimatedScale(
+                                scale: _isLoginPressed ? 0.96 : 1.0,
+                                duration: const Duration(milliseconds: 100),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF3B82F6), // Premium Blue (Matches return choice flavor)
+                                    border: Border.all(color: const Color(0xFF1E3A8A), width: 3),
+                                    boxShadow: [
+                                      if (!_isLoginPressed)
+                                        const BoxShadow(color: Colors.black45, offset: Offset(4, 4))
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      "ENTER WORLD",
+                                      style: TextStyle(
+                                        fontFamily: 'PressStart2P',
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // OVERLAPPING RPG "LOGIN" BANNER
+                      Positioned(
+                        top: -24,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF753896), // Bold RPG Purple
+                            border: Border.all(color: const Color(0xFF381B4B), width: 4),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black54, offset: Offset(3, 3)),
+                            ],
+                          ),
+                          child: const Text(
+                            "LOGIN",
+                            style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // BOTTOM INTERACTIVE NAV BAR
+                  GestureDetector(
+                    onTapDown: (_) {
+                      setState(() => _isBackPressed = true);
+                      _playInteractionEffect();
+                    },
+                    onTapUp: (_) => setState(() => _isBackPressed = false),
+                    onTapCancel: () => setState(() => _isBackPressed = false),
+                    onTap: () => Navigator.pop(context),
+                    child: AnimatedScale(
+                      scale: _isBackPressed ? 0.95 : 1.0,
+                      duration: const Duration(milliseconds: 100),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF21153B), 
+                          border: Border.all(color: const Color(0xFF4C3075), width: 3),
+                          boxShadow: [
+                            if (!_isBackPressed)
+                              const BoxShadow(color: Color(0xCC000000), offset: Offset(4, 4))
+                          ],
+                        ),
+                        child: const Center(
+                          widthFactor: 1.0,
+                          child: Text(
+                            "< GO BACK",
+                            style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              color: Colors.amber,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-
-                  _buildPixelField(_userController, "USERNAME"),
-                  const SizedBox(height: 15),
-                  _buildPixelField(_passController, "PASSWORD", obscure: true),
-                  const SizedBox(height: 30),
-
-                  PixelButton(
-                    text: "ENTER WORLD", // Shortened slightly
-                    color: Colors.blueAccent,
-                    onTap: _handleLogin,
                   ),
-
                   const SizedBox(height: 30),
-
-                  // BACK NAVIGATION
-                  GestureDetector(
-                    onTap: () {
-                      _playInteractionEffect();
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      "GO BACK",
-                      style: TextStyle(
-                        fontFamily: 'PressStart2P', // APPLIED
-                        color: Colors.white60, 
-                        fontSize: 8, 
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -154,30 +278,64 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildPixelField(TextEditingController controller, String hint, {bool obscure = false}) {
+  // Wrapper for validation checks
+  void _handleSignupCheck() {
+    _handleLogin();
+  }
+
+  // Label Builder (Mini pixel icon + title)
+  Widget _buildFieldLabel(String label, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF432A5E), size: 14),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'PressStart2P',
+              color: Color(0xFF432A5E), 
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Custom Parchment Input Box
+  Widget _buildPixelField({
+    required TextEditingController controller,
+    required String hintText,
+    bool obscure = false,
+    Widget? suffixIcon,
+  }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
-        border: Border.all(color: Colors.white, width: 3),
+        color: const Color(0xFFE9CE9E), 
+        border: Border.all(color: const Color(0xFF6B431A), width: 3), 
       ),
       child: TextField(
         controller: controller,
         obscureText: obscure,
-        onTap: () => HapticFeedback.selectionClick(), // Physical "tick" when tapping field
+        onTap: () => HapticFeedback.selectionClick(),
         style: const TextStyle(
-          fontFamily: 'PressStart2P', // APPLIED TO INPUT
-          color: Colors.white, 
-          fontSize: 10,
+          fontFamily: 'PressStart2P',
+          color: Color(0xFF381B4B),
+          fontSize: 9,
         ),
         decoration: InputDecoration(
-          hintText: hint, 
+          hintText: hintText,
           hintStyle: const TextStyle(
-            fontFamily: 'PressStart2P', // APPLIED TO HINT
-            color: Colors.white24, 
-            fontSize: 10,
+            fontFamily: 'PressStart2P',
+            color: Colors.black26,
+            fontSize: 8,
           ),
-          border: InputBorder.none, 
-          contentPadding: const EdgeInsets.all(15)
+          suffixIcon: suffixIcon,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          border: InputBorder.none,
         ),
       ),
     );

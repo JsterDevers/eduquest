@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:flutter/services.dart';
+import 'study_methods.dart';
+import 'study_hub.dart';
+import 'calender.dart';
+import 'profile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -8,33 +12,23 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
-  int _currentIndex = 2; // Start at Dashboard (Index 2)
-  late AnimationController _floatController;
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 2; // Default to Home Dashboard (Index 2)
 
-  @override
-  void initState() {
-    super.initState();
-    // Animates the floating books in the background
-    _floatController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _floatController.dispose();
-    super.dispose();
-  }
-
+  // Link actual interactive pages directly
   final List<Widget> _pages = [
-    const PlaceholderPage("Study Methods"),
-    const PlaceholderPage("Study Hub"),
-    const DashboardView(), // Index 2: The actual Home content
-    const PlaceholderPage("Calendar"),
-    const PlaceholderPage("Profile"),
+    const StudyMethodsPage(), // Index 0
+    const StudyHubPage(),     // Index 1
+    const DashboardView(),    // Index 2
+    const CalendarPage(),     // Index 3
+    const ProfilePage(),      // Index 4
   ];
+
+  // Helper for sound and touch feedback when tapping navigation items
+  void _playNavFeedback() {
+    SystemSound.play(SystemSoundType.click);
+    HapticFeedback.lightImpact();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,110 +36,188 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       backgroundColor: const Color(0xFF1A0B2E),
       body: Stack(
         children: [
-          // 1. PURE CODE BACKGROUND
+          // 1. GLOBAL DIAMOND BACKGROUND
           Positioned.fill(
-            child: CustomPaint(
-              painter: PixelLibraryPainter(),
+            child: Image.asset(
+              'assets/bg2_1.png',
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.none, 
             ),
           ),
 
-          // 2. MOVING OBJECTS (Floating Books)
-          _buildFloatingBook(top: 100, right: 40, delay: 0.0),
-          _buildFloatingBook(bottom: 150, left: 30, delay: 0.5),
-
-          // 3. MAIN CONTENT
-          IndexedStack(
-            index: _currentIndex,
-            children: _pages,
+          // 2. ACTIVE VIEWPORT
+          Positioned.fill(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _pages,
+            ),
           ),
         ],
       ),
-      bottomNavigationBar: SizedBox(
-        height: 80,
-        child: Stack(
+
+      // 3. RETRO DYNAMIC BOTTOM NAVIGATION BAR
+      bottomNavigationBar: Container(
+        height: 85, // Perfect height to comfortably fit icons and text labels
+        decoration: const BoxDecoration(
+          color: Color(0xFFC5BAF0), // Lavender background matching your screenshot
+          border: Border(
+            top: BorderSide(color: Color(0xFF5A469D), width: 4), // Solid dark purple outline
+          ),
+        ),
+        child: Row(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                'assets/navbar.png',
-                fit: BoxFit.fill,
-                filterQuality: FilterQuality.none,
-                errorBuilder: (context, error, stack) => Container(color: Colors.black),
-              ),
-            ),
-            Row(
-              children: List.generate(5, (index) {
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _currentIndex = index),
-                    behavior: HitTestBehavior.opaque,
-                    child: Container(),
-                  ),
-                );
-              }),
-            ),
+            _buildNavItem(0, "STUDY METHODS", Icons.emoji_objects_outlined),
+            _buildDivider(),
+            _buildNavItem(1, "STUDY HUB", Icons.backpack_outlined),
+            _buildDivider(),
+            _buildNavItem(2, "HOME", Icons.home_outlined),
+            _buildDivider(),
+            _buildNavItem(3, "CALENDAR", Icons.calendar_today_outlined),
+            _buildDivider(),
+            _buildNavItem(4, "PROFILE", Icons.person_outline),
           ],
         ),
       ),
     );
   }
 
-  // Floating Book Animation Helper
-  Widget _buildFloatingBook({double? top, double? bottom, double? left, double? right, required double delay}) {
-    return Positioned(
-      top: top, bottom: bottom, left: left, right: right,
-      child: AnimatedBuilder(
-        animation: _floatController,
-        builder: (context, child) {
-          // Sine wave formula for smooth vertical movement
-          double offset = math.sin((_floatController.value + delay) * math.pi * 2) * 12;
-          return Transform.translate(
-            offset: Offset(0, offset),
-            child: Icon(Icons.menu_book, color: const Color(0xFFB983FF).withValues(alpha: 0.4), size: 30),
-          );
+  // Builder for the thin pixel divider line between tabs
+  Widget _buildDivider() {
+    return Container(
+      width: 2,
+      height: double.infinity,
+      color: const Color(0xFF5A469D).withOpacity(0.3),
+    );
+  }
+
+  // Dynamic state rendering matching your reference sheet image!
+  Widget _buildNavItem(int index, String label, IconData icon) {
+    final isSelected = _currentIndex == index;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (_currentIndex != index) {
+            _playNavFeedback();
+            setState(() => _currentIndex = index);
+          }
         },
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          color: isSelected 
+              ? const Color(0xFFEBE5FF) // Selected Highlight
+              : Colors.transparent,     // Muted Inactive
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon block flanked by left and right arrow indicators
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isSelected)
+                    const Text(
+                      "◀",
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        color: Color(0xFF5A469D),
+                        fontSize: 8,
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(
+                      icon,
+                      color: const Color(0xFF5A469D),
+                      size: isSelected ? 28 : 24, // Selected icon grows larger
+                    ),
+                  ),
+                  if (isSelected)
+                    const Text(
+                      "▶",
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        color: Color(0xFF5A469D),
+                        fontSize: 8,
+                      ),
+                    ),
+                ],
+              ),
+              
+              // Animated vertical layout spacing and label presentation
+              if (isSelected) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      color: Color(0xFF5A469D),
+                      fontSize: 5.5, // Tiny pixel size to fit inside tab boundaries
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-// THE PURE CODE BACKGROUND PAINTER
-class PixelLibraryPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
-    double cellSize = 20.0;
-    
-    // Draw Background Grid Pattern
-    for (double i = 0; i < size.width; i += cellSize) {
-      for (double j = 0; j < size.height; j += cellSize) {
-        if ((i + j) % (cellSize * 4) == 0) {
-          paint.color = const Color(0xFF2D1B4E).withValues(alpha: 0.2);
-          canvas.drawRect(Rect.fromLTWH(i, j, cellSize, cellSize), paint);
-        }
-      }
-    }
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
+// 4. MAIN DASHBOARD CONTENT
 class DashboardView extends StatelessWidget {
   const DashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text("DASHBOARD READY", 
-        style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, letterSpacing: 2)),
+    return Scaffold(
+      backgroundColor: Colors.transparent, // Keeps the global diamond grid visible
+      body: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          margin: const EdgeInsets.symmetric(horizontal: 32),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5E2C4), // Warm Parchment Cream
+            border: Border.all(color: const Color(0xFF381B4B), width: 5),
+            boxShadow: const [
+              BoxShadow(color: Color(0xCC000000), offset: Offset(6, 6)),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.stars, color: Colors.amber, size: 40),
+              SizedBox(height: 16),
+              Text(
+                "DASHBOARD",
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  color: Color(0xFF381B4B),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 12),
+              Text(
+                "WELCOME BACK, HERO!",
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  color: Color(0xFF753896),
+                  fontSize: 8,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
-}
-
-class PlaceholderPage extends StatelessWidget {
-  final String title;
-  const PlaceholderPage(this.title, {super.key});
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Text(title, style: const TextStyle(color: Colors.white60, fontSize: 18)),
-  );
 }
