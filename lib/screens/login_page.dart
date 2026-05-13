@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import '../services/database_service.dart';
 import 'home_page.dart';
+import '../services/music_service.dart'; 
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +24,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
+    
+    // SEAMLESS AUDIO ENGAGEMENT: Sustains the continuous background theme run
+    BackgroundMusic.play();
+
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -177,7 +182,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF3B82F6), // Premium Blue (Matches return choice flavor)
+                                    color: const Color(0xFF3B82F6), 
                                     border: Border.all(color: const Color(0xFF1E3A8A), width: 3),
                                     boxShadow: [
                                       if (!_isLoginPressed)
@@ -208,7 +213,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF753896), // Bold RPG Purple
+                            color: const Color(0xFF753896), 
                             border: Border.all(color: const Color(0xFF381B4B), width: 4),
                             boxShadow: const [
                               BoxShadow(color: Colors.black54, offset: Offset(3, 3)),
@@ -278,12 +283,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
   }
 
-  // Wrapper for validation checks
   void _handleSignupCheck() {
     _handleLogin();
   }
 
-  // Label Builder (Mini pixel icon + title)
   Widget _buildFieldLabel(String label, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -305,7 +308,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
   }
 
-  // Custom Parchment Input Box
   Widget _buildPixelField({
     required TextEditingController controller,
     required String hintText,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'restore_page.dart';
 import 'login_page.dart';
+import '../services/music_service.dart'; 
 
 class LoginChoicePage extends StatefulWidget {
   const LoginChoicePage({super.key});
@@ -15,6 +16,13 @@ class _LoginChoicePageState extends State<LoginChoicePage> {
   bool _isUserPassPressed = false;
   bool _isRecoveryPressed = false;
   bool _isBackPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // SEAMLESS AUDIO ENGAGEMENT: Maintains the audio thread across menu options
+    BackgroundMusic.play();
+  }
 
   // HELPER: Play interaction feedback
   void _playInteractionEffect() {
@@ -201,7 +209,7 @@ class _LoginChoicePageState extends State<LoginChoicePage> {
 
                   const SizedBox(height: 32),
 
-                  // BOTTOM BACK BUTTON BAR (Matches the "Login >" style bar)
+                  // BOTTOM BACK BUTTON BAR
                   GestureDetector(
                     onTapDown: (_) {
                       setState(() => _isBackPressed = true);
@@ -216,7 +224,7 @@ class _LoginChoicePageState extends State<LoginChoicePage> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF21153B), // Navy purple block
+                          color: const Color(0xFF21153B), 
                           border: Border.all(color: const Color(0xFF4C3075), width: 3),
                           boxShadow: [
                             if (!_isBackPressed)

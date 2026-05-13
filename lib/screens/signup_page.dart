@@ -5,6 +5,7 @@ import '../services/database_service.dart';
 import '../models/player.dart';
 import 'home_page.dart';
 import 'login_choice_page.dart';
+import '../services/music_service.dart'; 
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -25,6 +26,13 @@ class _SignupPageState extends State<SignupPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // SEAMLESS AUDIO ENGAGEMENT: Ensures the tracking loops smoothly across workflows
+    BackgroundMusic.play();
+  }
 
   @override
   void dispose() {
@@ -438,7 +446,7 @@ class _SignupPageState extends State<SignupPage> {
                   "IN COMPLIANCE WITH THE DATA PRIVACY ACT, YOUR CHARACTER DATA (LEVEL, XP, AND ENCRYPTED PASSWORDS) IS STORED EXCLUSIVELY WITHIN YOUR DEVICE'S SECURED LOCAL SANDBOX.\n\n"
                   "WE DO NOT COLLECT, TRANSMIT, OR PROCESS ANY USER INFORMATION ON EXTERNAL CLOUD SERVERS, GUARANTEEING COMPLETE DATA SOVEREIGNTY AND A ZERO-KNOWLEDGE ARCHITECTURE.\n\n"
                   "2. DATA PROTECTION (SECURITY)\n\n"
-                  "YOUR PASSWORD IS YOUR CRYPTOGRAPHIC KEY. IF LOST, ACCESS CAN ONLY BE RESTORED VIA YOUR UNIQUE 8-CHARACTER RECOVERY SCROLL. WE MAINTAIN ZERO BACKDOORS TO YOUR LOCAL DATABASE.\n\n"
+                  "YOUR PASSWORD IS YOUR CRYPTOGRAPHIC KEY. IF LOST, ACCESS CAN ONLY BE RESTORED VIA YOUR UNIQUE 8-CHARACTER RECOVERY SCROLL. WE MAINTAIN ZERO BACKDOORS TO YOUR LOCAL STORE.\n\n"
                   "3. CODE OF CONDUCT (TERMS)\n\n"
                   "YOU AGREE NOT TO MANIPULATE OR MALICIOUSLY INJECT SPELLS INTO THE LOCAL CHRONICLES TO ARTIFICIALLY INFLATE XP OR LEVEL STATS. PLAY HONORABLY.",
                   style: TextStyle(
@@ -483,7 +491,7 @@ class _SignupPageState extends State<SignupPage> {
             label,
             style: const TextStyle(
               fontFamily: 'PressStart2P',
-              color: const Color(0xFF432A5E), 
+              color: Color(0xFF432A5E), 
               fontSize: 9,
               fontWeight: FontWeight.bold,
             ),

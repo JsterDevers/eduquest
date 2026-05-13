@@ -317,7 +317,7 @@ class _StudyHubPageState extends State<StudyHubPage> {
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

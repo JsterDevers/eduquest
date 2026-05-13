@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'signup_page.dart';
+import '../services/music_service.dart'; 
 
 class StartAdventurePage extends StatefulWidget {
   const StartAdventurePage({super.key});
@@ -16,6 +17,10 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
   @override
   void initState() {
     super.initState();
+
+    // Perfect: Manually triggers the looping background audio right as the screen builds
+    BackgroundMusic.play();
+
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -77,9 +82,9 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
                     style: TextStyle(
                       fontFamily: 'PressStart2P', 
                       color: Colors.white,
-                      fontSize: 36, // PERFECTED SIZE: Smaller to fit screen nicely
+                      fontSize: 36, 
                       fontWeight: FontWeight.bold,
-                      letterSpacing: -2, // Adjusted so letters don't overlap weirdly
+                      letterSpacing: -2, 
                       shadows: [
                         // Sharp Black Outline
                         const Shadow(offset: Offset(-2, -2), color: Colors.black),
@@ -87,7 +92,7 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
                         const Shadow(offset: Offset(-2, 2), color: Colors.black),
                         const Shadow(offset: Offset(2, 2), color: Colors.black),
                         
-                        // Solid 3D Extrusion (Reduced to 6 layers for better proportion)
+                        // Solid 3D Extrusion
                         const Shadow(offset: Offset(1, 1), color: Color(0xFF4A2B11)),
                         const Shadow(offset: Offset(2, 2), color: Color(0xFF4A2B11)),
                         const Shadow(offset: Offset(3, 3), color: Color(0xFF4A2B11)),

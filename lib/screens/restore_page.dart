@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // REQUIRED for formatters and feedback
+import 'package:flutter/services.dart'; 
 import 'dart:math' as math;
 import '../services/database_service.dart';
 import 'home_page.dart';
-
+import '../services/music_service.dart'; 
 class RestorePage extends StatefulWidget {
   const RestorePage({super.key});
 
@@ -22,6 +22,10 @@ class _RestorePageState extends State<RestorePage> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
+
+    // SEAMLESS AUDIO ENGAGEMENT: Loops continuously across setup windows
+    BackgroundMusic.play();
+
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -327,12 +331,11 @@ class _RestorePageState extends State<RestorePage> with SingleTickerProviderStat
         textAlign: TextAlign.center,
         onTap: () => HapticFeedback.selectionClick(),
         
-        // INTERACTIVE INPUT FORMATTERS REGISTERED HERE:
         inputFormatters: [
-          LengthLimitingTextInputFormatter(8), // Hard caps entry at exactly 8 characters
-          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), // Block symbols, spaces, & emojis
+          LengthLimitingTextInputFormatter(8), 
+          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')), 
           TextInputFormatter.withFunction((oldValue, newValue) {
-            return newValue.copyWith(text: newValue.text.toUpperCase()); // Auto-capitalize letters instantly
+            return newValue.copyWith(text: newValue.text.toUpperCase()); 
           }),
         ],
 
@@ -363,10 +366,10 @@ class _RestorePageState extends State<RestorePage> with SingleTickerProviderStat
           double offset = math.sin((_floatController.value + delay) * math.pi * 2) * 12;
           return Transform.translate(
             offset: Offset(0, offset),
-            child: Icon(
+            child: const Icon(
               Icons.auto_stories, 
-              color: const Color(0xFFB983FF).withOpacity(0.3), 
-              size: 40
+              color: Color(0x4DB983FF), // FIXED: Warning-free constant hex for 30% opacity
+              size: 40,
             ),
           );
         },
