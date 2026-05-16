@@ -24,7 +24,10 @@ android {
         applicationId = "com.example.eduquest"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        
+        // APPLIED: Set to 24 for offline LiteRT/Gemma AI system compatibility
+        minSdk = 24 
+        
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

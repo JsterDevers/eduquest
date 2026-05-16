@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart'; // APPLIED: Native OS Permission Engine Hook
 import 'study_methods.dart';
 import 'study_hub.dart';
 import 'calender.dart'; 
 import 'profile.dart';
 import '../services/music_service.dart';
+import '../widgets/ai_assistant_sheet.dart'; // APPLIED: Global AI Sheet Wrapper
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -46,23 +48,27 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1A0B2E),
-      body: Stack(
-        children: [
-          // GLOBAL DIAMOND BACKGROUND
-          Positioned.fill(
-            child: Image.asset(
-              'assets/bg2_1.png',
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.none, 
+      
+      // APPLIED: Wrapper targets your layout root, rendering the Meta AI orb across all sub-tabs!
+      body: AIAssistantWrapper(
+        child: Stack(
+          children: [
+            // GLOBAL DIAMOND BACKGROUND
+            Positioned.fill(
+              child: Image.asset(
+                'assets/bg2_1.png',
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.none, 
+              ),
             ),
-          ),
-          Positioned.fill(
-            child: IndexedStack(
-              index: _currentIndex,
-              children: _pages,
+            Positioned.fill(
+              child: IndexedStack(
+                index: _currentIndex,
+                children: _pages,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: Container(
         height: 85, 
@@ -265,7 +271,7 @@ class _HomePageState extends State<HomePage> {
                                   border: Border.all(color: const Color(0xFF991B1B), width: 2),
                                   boxShadow: [
                                     if (!isDenyPressed)
-                                      const BoxShadow(color: Color(0x59000000), offset: Offset(3, 3)) // FIXED: Removed black35
+                                      const BoxShadow(color: Color(0x59000000), offset: Offset(3, 3))
                                   ],
                                 ),
                                 child: const Center(
@@ -284,15 +290,18 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(width: 14),
 
-                        // ALLOW PRIVILEGES BLOCK
+                        // ALLOW PRIVILEGES BLOCK: Seamlessly hands execution off to native hardware popups
                         Expanded(
                           child: GestureDetector(
                             onTapDown: (_) => setDialogState(() => isAcceptPressed = true),
                             onTapUp: (_) => setDialogState(() => isAcceptPressed = false),
                             onTapCancel: () => setDialogState(() => isAcceptPressed = false),
-                            onTap: () {
+                            onTap: () async {
                               SystemSound.play(SystemSoundType.click);
-                              Navigator.pop(context); 
+                              Navigator.pop(context); // Clears custom menu
+                              
+                              // APPLIED: Summons the real native OS request engine dialogue card seamlessly
+                              await Permission.notification.request();
                             },
                             child: AnimatedScale(
                               scale: isAcceptPressed ? 0.95 : 1.0,
@@ -304,7 +313,7 @@ class _HomePageState extends State<HomePage> {
                                   border: Border.all(color: const Color(0xFF166534), width: 2),
                                   boxShadow: [
                                     if (!isAcceptPressed)
-                                      const BoxShadow(color: Color(0x59000000), offset: Offset(3, 3)) // FIXED: Removed black35
+                                      const BoxShadow(color: Color(0x59000000), offset: Offset(3, 3))
                                   ],
                                 ),
                                 child: const Center(

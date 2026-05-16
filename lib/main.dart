@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/database_service.dart';
+import 'services/offline_ai_service.dart'; // APPLIED: Linked local AI service configuration
 import 'screens/loading_screen.dart'; 
 
 void main() async {
@@ -10,15 +11,26 @@ void main() async {
   // This draws the first frame (Loading Screen) to avoid the black screen hang.
   runApp(const EduQuest());
 
-  // 3. Delayed Heavy Work
+  // 3. Delayed Heavy Setup Work
   // We wait 1 second to let the animation and sound start smoothly 
-  // before the CPU begins the heavy Isar initialization.
+  // before the CPU begins processing heavy local database and AI initializations.
   Future.delayed(const Duration(milliseconds: 1000), () async {
+    // A. INITIALIZE OFFLINE DATA CORE
     try {
       await DatabaseService.initialize();
       debugPrint("Database initialized successfully.");
     } catch (e) {
       debugPrint("Database initialization error: $e");
+    }
+
+    // B. INITIALIZE OFFLINE AI INFRASTRUCTURE CORE
+    try {
+      OfflineAiService.initializeEngine((progress) {
+        // FIXED: Removed the '* 100' multiplier so your progress tracks accurately from 0% to 100%
+        debugPrint("EDUQUEST AI SYSTEM MATRIX LOADING: ${progress.toStringAsFixed(0)}%");
+      });
+    } catch (e) {
+      debugPrint("AI Core system boot error: $e");
     }
   });
 }
