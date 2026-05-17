@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/offline_ai_service.dart';
 
+// BROADCAST LINK: Notifies any open layout widgets the exact millisecond the offline AI finishes waking up
+final ValueNotifier<bool> _aiReadyNotifier = ValueNotifier<bool>(OfflineAiService.isReady);
+
 class AIAssistantWrapper extends StatefulWidget {
   final Widget child;
   const AIAssistantWrapper({super.key, required this.child});
@@ -16,11 +19,30 @@ class _AIAssistantWrapperState extends State<AIAssistantWrapper> with SingleTick
   @override
   void initState() {
     super.initState();
-    // Recreates the fluid, luminous moving glow effect of Meta's design ring
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+
+    // FIXED: Added 'await' and tied completion directly to our broadcast listener notifier
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 800), () async {
+        if (!OfflineAiService.isReady) {
+          try {
+            // Await ensures steps 3 and 4 (GPU assignment and session instantiation) finish completely
+            await OfflineAiService.initializeEngine((progress) {
+              debugPrint("Silent AI Engine Warm-up: ${progress.toStringAsFixed(0)}%");
+            });
+          } catch (e) {
+            debugPrint("Background engine wakeup interrupt: $e");
+          }
+        }
+        
+        // Broadcast the success signal to unlock text input boxes everywhere instantly
+        _aiReadyNotifier.value = OfflineAiService.isReady;
+        if (mounted) setState(() {});
+      });
+    });
   }
 
   @override
@@ -38,7 +60,9 @@ class _AIAssistantWrapperState extends State<AIAssistantWrapper> with SingleTick
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const AIChatPanel(),
-    );
+    ).then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -46,12 +70,9 @@ class _AIAssistantWrapperState extends State<AIAssistantWrapper> with SingleTick
     return Scaffold(
       body: Stack(
         children: [
-          // Renders whatever page view index is currently selected underneath
           widget.child,
-
-          // FLOATING GRADIENT META AI ORB OVERLAY
           Positioned(
-            bottom: 105, // Safely clears the 85px height of your custom nav block
+            bottom: 105, 
             right: 20,
             child: GestureDetector(
               onTap: _openAIChatPanel,
@@ -64,12 +85,7 @@ class _AIAssistantWrapperState extends State<AIAssistantWrapper> with SingleTick
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const SweepGradient(
-                        colors: [
-                          Color(0xFF3B82F6), // Neon Blue
-                          Color(0xFF10B981), // Emerald Green
-                          Color(0xFF8B5CF6), // Royal Purple
-                          Color(0xFF3B82F6), // Loop closure
-                        ],
+                        colors: [Color(0xFF3B82F6), Color(0xFF10B981), Color(0xFF8B5CF6), Color(0xFF3B82F6)],
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -82,15 +98,8 @@ class _AIAssistantWrapperState extends State<AIAssistantWrapper> with SingleTick
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: Container(
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF1A0B2E), // Obsidian core keeps icon clean
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.auto_awesome, 
-                          color: Colors.white, 
-                          size: 22
-                        ),
+                        decoration: const BoxDecoration(color: Color(0xFF1A0B2E), shape: BoxShape.circle),
+                        child: const Icon(Icons.auto_awesome, color: Colors.white, size: 22),
                       ),
                     ),
                   );
@@ -118,9 +127,27 @@ class _AIChatPanelState extends State<AIChatPanel> {
   final _chatController = TextEditingController();
   bool _isResponding = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Connects this panel to the global broadcast channel updates
+    _aiReadyNotifier.addListener(_handleAiStatusChange);
+  }
+
+  @override
+  void dispose() {
+    _aiReadyNotifier.removeListener(_handleAiStatusChange);
+    _chatController.dispose();
+    super.dispose();
+  }
+
+  void _handleAiStatusChange() {
+    if (mounted) setState(() {}); // Force redraw inside the bottom sheet tree context
+  }
+
   void _sendMessage() async {
     final text = _chatController.text.trim();
-    if (text.isEmpty || _isResponding) return;
+    if (text.isEmpty || _isResponding || !_aiReadyNotifier.value) return;
 
     SystemSound.play(SystemSoundType.click);
     setState(() {
@@ -129,15 +156,11 @@ class _AIChatPanelState extends State<AIChatPanel> {
       _isResponding = true;
     });
 
-    // Invoke actual hardware computation framework
     final aiResponse = await OfflineAiService.sendChatMessage(text);
 
     if (mounted) {
       setState(() {
-        _messages.add({
-          "sender": "ai",
-          "text": aiResponse.toUpperCase(), // Keeps retro RPG styling consistent
-        });
+        _messages.add({"sender": "ai", "text": aiResponse.toUpperCase()});
         _isResponding = false;
       });
       HapticFeedback.lightImpact();
@@ -147,21 +170,17 @@ class _AIChatPanelState extends State<AIChatPanel> {
   @override
   Widget build(BuildContext context) {
     final keyboardSpace = MediaQuery.of(context).viewInsets.bottom;
+    
+    // Checks the broadcast notifier value to dynamically alter operational access states
+    final bool ready = _aiReadyNotifier.value || OfflineAiService.isReady;
 
     return Container(
       padding: EdgeInsets.only(bottom: keyboardSpace),
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.75,
-      ),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
       decoration: const BoxDecoration(
         color: Color(0xFF21153B), 
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        border: Border(
-          top: BorderSide(color: Color(0xFF753896), width: 4),
-        ),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+        border: Border(top: BorderSide(color: Color(0xFF753896), width: 4)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -182,10 +201,7 @@ class _AIChatPanelState extends State<AIChatPanel> {
                   style: TextStyle(fontFamily: 'PressStart2P', color: Colors.cyanAccent, fontSize: 9, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-                  onPressed: () => Navigator.pop(context),
-                )
+                IconButton(icon: const Icon(Icons.close, color: Colors.white54, size: 20), onPressed: () => Navigator.pop(context))
               ],
             ),
           ),
@@ -198,7 +214,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
               itemBuilder: (context, index) {
                 final msg = _messages[index];
                 final isAI = msg['sender'] == 'ai';
-                
                 return Align(
                   alignment: isAI ? Alignment.centerLeft : Alignment.centerRight,
                   child: Container(
@@ -206,19 +221,11 @@ class _AIChatPanelState extends State<AIChatPanel> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: isAI ? const Color(0xFF381B4B) : const Color(0xFF753896),
-                      border: Border.all(
-                        color: isAI ? const Color(0xFF4C3075) : const Color(0xFF9E59C9),
-                        width: 2,
-                      ),
+                      border: Border.all(color: isAI ? const Color(0xFF4C3075) : const Color(0xFF9E59C9), width: 2),
                     ),
                     child: Text(
                       msg['text'] ?? "",
-                      style: TextStyle(
-                        fontFamily: 'PressStart2P',
-                        color: isAI ? Colors.white : Colors.amberAccent,
-                        fontSize: 7.5,
-                        height: 1.5,
-                      ),
+                      style: TextStyle(fontFamily: 'PressStart2P', color: isAI ? Colors.white : Colors.amberAccent, fontSize: 7.5, height: 1.5),
                     ),
                   ),
                 );
@@ -237,10 +244,11 @@ class _AIChatPanelState extends State<AIChatPanel> {
                     color: const Color(0xFF21153B),
                     child: TextField(
                       controller: _chatController,
-                      style: const TextStyle(fontFamily: 'PressStart2P', color: Colors.white, fontSize: 8),
-                      decoration: const InputDecoration(
-                        hintText: "ASK THE CHRONICLES...",
-                        hintStyle: TextStyle(color: Colors.white24, fontSize: 8),
+                      enabled: ready,
+                      style: TextStyle(fontFamily: 'PressStart2P', color: ready ? Colors.white : Colors.white24, fontSize: 8),
+                      decoration: InputDecoration(
+                        hintText: ready ? "ASK THE CHRONICLES..." : "READING ARCHIVES...",
+                        hintStyle: const TextStyle(color: Colors.white24, fontSize: 8),
                         border: InputBorder.none,
                       ),
                     ),
@@ -248,11 +256,11 @@ class _AIChatPanelState extends State<AIChatPanel> {
                 ),
                 const SizedBox(width: 12),
                 GestureDetector(
-                  onTap: _sendMessage,
+                  onTap: ready ? _sendMessage : null,
                   child: Container(
                     padding: const EdgeInsets.all(12),
-                    color: const Color(0xFF753896),
-                    child: const Icon(Icons.send, color: Colors.white, size: 16),
+                    color: ready ? const Color(0xFF753896) : Colors.white10,
+                    child: Icon(Icons.send, color: ready ? Colors.white : Colors.white24, size: 16),
                   ),
                 ),
               ],
