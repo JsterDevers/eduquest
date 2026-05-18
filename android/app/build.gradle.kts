@@ -7,7 +7,9 @@ plugins {
 
 android {
     namespace = "com.example.eduquest"
-    compileSdk = flutter.compileSdkVersion
+    
+    // FIXED: Upgraded to 36 to satisfy flutter_gemma and background_downloader compilation requirements
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -28,7 +30,8 @@ android {
         // APPLIED: Set to 24 for offline LiteRT/Gemma AI system compatibility
         minSdk = 24 
         
-        targetSdk = flutter.targetSdkVersion
+        // RETAINED: Left at 34 to match your physical testing device behavior rules safely
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
