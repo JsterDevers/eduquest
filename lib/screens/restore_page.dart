@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
+import 'package:shared_preferences/shared_preferences.dart'; // FIXED: Imported local data tracking preference library
 import 'dart:math' as math;
 import '../services/database_service.dart';
 import 'home_page.dart';
 import '../services/music_service.dart'; 
+
 class RestorePage extends StatefulWidget {
   const RestorePage({super.key});
 
@@ -65,12 +67,19 @@ class _RestorePageState extends State<RestorePage> with SingleTickerProviderStat
       final player = await DatabaseService.getPlayerByCode(inputCode);
 
       if (player != null && mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-          (route) => false,
-        );
-      } else {
+        // FIXED: Flip the 'Remember Me' status switch flag to TRUE inside the phone partition storage
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        debugPrint("RESTORE MODULE: Code authentic. Session lock synced to TRUE.");
+
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+            (route) => false, // Erases authentication step logs cleanly
+          );
+        }
+      } else if (mounted) {
         setState(() => _errorMessage = "HERO NOT FOUND"); 
       }
     } catch (e) {
@@ -368,7 +377,7 @@ class _RestorePageState extends State<RestorePage> with SingleTickerProviderStat
             offset: Offset(0, offset),
             child: const Icon(
               Icons.auto_stories, 
-              color: Color(0x4DB983FF), // FIXED: Warning-free constant hex for 30% opacity
+              color: Color(0x4DB983FF), 
               size: 40,
             ),
           );

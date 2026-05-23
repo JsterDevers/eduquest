@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
+import 'package:shared_preferences/shared_preferences.dart'; // FIXED: Local session tracking dependency included
 import 'dart:math' as math;
 import '../services/database_service.dart';
 import 'home_page.dart';
@@ -62,11 +63,18 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     final player = await DatabaseService.verifyPlayer(username, password);
 
     if (player != null && mounted) {
-      Navigator.pushAndRemoveUntil(
-        context, 
-        MaterialPageRoute(builder: (context) => const HomePage()), 
-        (route) => false
-      );
+      // FIXED: Locks down the persistent session token onto the local partition memory bank
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      debugPrint("AUTH MODULE: Existing player match found. Session sync TRUE.");
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context, 
+          MaterialPageRoute(builder: (context) => const HomePage()), 
+          (route) => false // Clears navigation back-stack completely
+        );
+      }
     } else if (mounted) {
       setState(() => _errorMessage = "HERO NOT FOUND!"); 
     }

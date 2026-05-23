@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
+import 'package:shared_preferences/shared_preferences.dart'; // FIXED: Imported the local session storage bridge
 import 'dart:math';
 import '../services/database_service.dart';
 import '../models/player.dart';
@@ -345,12 +346,10 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  // Helper Row for Custom Checkbox with Independent Taps
   Widget _buildCheckboxRow() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // The Interactive Box
         GestureDetector(
           onTap: () {
             _playInteractionEffect();
@@ -375,7 +374,6 @@ class _SignupPageState extends State<SignupPage> {
           ),
         ),
         const SizedBox(width: 12),
-        // The Clickable Oath Text
         Expanded(
           child: Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
@@ -397,7 +395,7 @@ class _SignupPageState extends State<SignupPage> {
               GestureDetector(
                 onTap: () {
                   _playInteractionEffect();
-                  _showTermsDialog(context); // Triggers Policy Dialog
+                  _showTermsDialog(context); 
                 },
                 child: const Text(
                   "OATH OF THE REALM",
@@ -417,7 +415,6 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  // POPUP DIALOG: Improvised Terms of Service & Privacy Policy
   void _showTermsDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -578,13 +575,21 @@ class _SignupPageState extends State<SignupPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               _playInteractionEffect();
-              Navigator.pushAndRemoveUntil(
-                context, 
-                MaterialPageRoute(builder: (context) => const HomePage()), 
-                (route) => false
-              );
+              
+              // FIXED: Writes the permanent auto-login sync key flag into the player's mobile hardware memory bank
+              final SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
+              debugPrint("SESSION ENGINE: Account registered. Sync flag locked to TRUE.");
+
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context, 
+                  MaterialPageRoute(builder: (context) => const HomePage()), 
+                  (route) => false
+                );
+              }
             },
             child: const Text(
               "I SAVED IT", 

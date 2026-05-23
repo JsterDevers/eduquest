@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:math' as math;
-import 'start_adventure_page.dart';
+import 'start_adventure_page.dart'; // Always target this page next
 
 class EduQuestSplashScreen extends StatefulWidget {
   const EduQuestSplashScreen({super.key});
@@ -22,17 +22,17 @@ class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
     // 1. Play the startup sound immediately
     _playStartupSound();
 
-    // 2. Dots now complete a full cycle every 5 seconds
-    // This makes the animation smoother and less "rushed"
+    // 2. Dots complete a full cycle every 5 seconds for a smooth retro loop
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
     )..repeat();
 
-    // 3. Navigation Delay extended to 5 seconds
-    // This provides a buffer for the Isar DB to initialize in main.dart
+    // 3. CINEMATIC ROUTING: Let the loading animations run fully for 5 seconds,
+    // then ALWAYS direct the flow straight to the Start Adventure Title Screen.
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) {
+        debugPrint("SPLASH CORE: Intro complete. Launching Title Adventure Screen.");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const StartAdventurePage()),
@@ -61,7 +61,7 @@ class _EduQuestSplashScreenState extends State<EduQuestSplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, 
+      backgroundColor: Colors.black, // Maintained: Pitch black startup background
       body: SizedBox.expand(
         child: Stack(
           alignment: Alignment.center,

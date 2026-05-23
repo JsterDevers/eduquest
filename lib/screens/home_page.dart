@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart'; // RETAINED: Native permission channel handlers
+import 'package:flutter_phoenix/flutter_phoenix.dart'; // REQUIRED: Hooks up the rebirth control channel trigger
 import 'study_methods.dart';
 import 'study_hub.dart';
 import 'calender.dart'; 
@@ -15,8 +15,10 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+// FIXED: Added WidgetsBindingObserver back to monitor background pause/resume timers
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _currentIndex = 2; // Default to Home Dashboard (Index 2)
+  DateTime? _backgroundTimeMarker; // Tracks background sleep timestamps
 
   final List<Widget> _pages = [
     const StudyMethodsPage(), 
@@ -29,51 +31,50 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // 1. TERMINATE ADVENTURE MUSIC ENGINE IMMEDIATELY UPON LOGGING IN
-    BackgroundMusic.stop();
+    WidgetsBinding.instance.addObserver(this); // Start listening to system sleep cycles
+    BackgroundMusic.stop(); // Safe cut background loop track on landing page
+  }
 
-    // 2. ULTIMATE MULTI-PERMISSION BUNDLE: Requests alerts, camera, media, and raw document access paths
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Future.delayed(const Duration(milliseconds: 500));
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Dismantle observer link to avoid memory leak footprints
+    super.dispose();
+  }
+
+  // FIXED: Handles automatic 5-minute cold restart background lifecycle checks
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // User minimized the app -> Mark the exact exit time stamp
+      _backgroundTimeMarker = DateTime.now();
+      debugPrint("LIFECYCLE ENGINE: App suspended at $_backgroundTimeMarker");
+    } 
+
+    if (state == AppLifecycleState.resumed) {
+      debugPrint("LIFECYCLE ENGINE: Player brought app back to focus.");
       
-      if (mounted) {
-        // Structured registry array containing every single hardware permission anchor
-        List<Permission> permissionsToRequest = [
-          Permission.notification, // System quest notifications
-          Permission.camera,       // Scanning codes or captured profile snaps
-          Permission.photos,       // Android 13/14 Media Gallery Images
-          Permission.videos,       // Android 13/14 Media Gallery Videos
-          Permission.audio,        // Android 13/14 Media Gallery Audio clips
-          Permission.storage,      // Legacy/General File Storage access (Crucial for PDFs, Docs, TXT files)
-        ];
-
-        // Fires the native system permission dialog loop down the entire list
-        Map<Permission, PermissionStatus> statuses = await permissionsToRequest.request();
+      if (_backgroundTimeMarker != null) {
+        // Calculate total duration spent idle in the phone's background tray
+        final durationSpent = DateTime.now().difference(_backgroundTimeMarker!);
         
-        // Diagnostic trace block to log out current security states in the VS Code debug terminal
-        statuses.forEach((permission, status) {
-          debugPrint("EDUQUEST CORE SECURITY: $permission is verified as -> $status");
-        });
-
-        // HARDWARE FALLBACK: If any path is hard-locked by a prior rejection flag,
-        // take the player straight to the native settings menu to toggle them manually.
-        if (statuses[Permission.notification]!.isPermanentlyDenied ||
-            statuses[Permission.camera]!.isPermanentlyDenied ||
-            statuses[Permission.photos]!.isPermanentlyDenied ||
-            statuses[Permission.videos]!.isPermanentlyDenied ||
-            statuses[Permission.audio]!.isPermanentlyDenied ||
-            statuses[Permission.storage]!.isPermanentlyDenied) {
-          debugPrint("EDUQUEST CORE SECURITY: Permanent block detected. Redirecting to system menu...");
-          await openAppSettings();
+        // 5 Minutes Hard Reset Limit Check (5 minutes = 300 seconds)
+        if (durationSpent.inSeconds >= 300) {
+          debugPrint("LIFECYCLE SECURITY: Game idle for 5+ minutes. Initializing COLD RESTART.");
+          if (mounted) {
+            Phoenix.rebirth(context); // Triggers absolute system rebirth pass!
+          }
+        } else {
+          debugPrint("LIFECYCLE ENGINE: Welcome back! Quick return duration: ${durationSpent.inSeconds}s");
         }
       }
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1A0B2E),
+      extendBody: true, // Extends sub-pages smoothly underneath our floating bottom navbar
       body: AIAssistantWrapper(
         child: Stack(
           children: [
@@ -91,11 +92,28 @@ class _HomePageState extends State<HomePage> {
                 children: _pages,
               ),
             ),
+
+            // FIXED: Full-width banner layout spanning perfectly from left to right edge
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                bottom: false, // Prevents pushing layout blocks from the bottom chin
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Image.asset(
+                    'assets/eduquest_banner.png',
+                    fit: BoxFit.contain, // Centered and scaled perfectly edge-to-edge
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
       
-      // Full-width edge-to-edge retro vector navigation
+      // Full-width edge-to-edge redesigned professional navigation bar
       bottomNavigationBar: EduQuestNavbar(
         currentIndex: _currentIndex,
         onTap: (newIndex) {
@@ -157,7 +175,8 @@ class DashboardView extends StatelessWidget {
   }
 }
 
-class EduQuestNavbar extends StatefulWidget {
+// REDESIGNED: Sleek, high-fidelity professional RPG navbar widget 
+class EduQuestNavbar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -167,120 +186,83 @@ class EduQuestNavbar extends StatefulWidget {
     required this.onTap,
   });
 
-  @override
-  State<EduQuestNavbar> createState() => _EduQuestNavbarState();
-}
-
-class _EduQuestNavbarState extends State<EduQuestNavbar> {
-  int? _hoveredIndex;
-
-  final List<Map<String, dynamic>> _navData = [
-    {"label": "METHODS", "icon": Icons.emoji_objects_outlined},
-    {"label": "HUB", "icon": Icons.backpack_outlined},
-    {"label": "HOME", "icon": Icons.home_sharp},
-    {"label": "CALENDAR", "icon": Icons.calendar_today_outlined},
-    {"label": "PROFILE", "icon": Icons.person_outline},
+  final List<IconData> _icons = const [
+    Icons.emoji_objects_outlined,    // METHODS
+    Icons.backpack_outlined,         // HUB
+    Icons.home_filled,               // HOME
+    Icons.calendar_today_outlined,   // CALENDAR
+    Icons.person_outline,            // PROFILE
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 96, 
-      color: const Color(0xFF1A0B2E), 
-      padding: const EdgeInsets.only(bottom: 6),
+    return SafeArea(
       child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFB1A5E3), 
-          border: Border(
-            top: BorderSide(color: Color(0xFF4A3A85), width: 4), 
-            bottom: BorderSide(color: Color(0xFF4A3A85), width: 2),
+        height: 72, // Reduced height for a sleeker profile layout
+        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12), // Floating container styling
+        decoration: BoxDecoration(
+          color: const Color(0xFF150727), // Deep midnight premium background
+          borderRadius: BorderRadius.circular(16), // Smooth corner radius layout
+          border: Border.all(
+            color: const Color(0xFF4A3A85), // Neon accent boundary line
+            width: 3,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.45), // Clean alpha shadow depth
+              blurRadius: 10,
+              offset: const Offset(0, 6), // Soft dropshadow container accent
+            ),
+          ],
         ),
-        clipBehavior: Clip.antiAlias,
         child: Row(
-          children: List.generate(5, (index) {
-            final bool isSelected = widget.currentIndex == index;
-            final bool isHovered = _hoveredIndex == index;
-            final item = _navData[index];
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(_icons.length, (index) {
+            final bool isSelected = currentIndex == index;
 
             return Expanded(
-              child: MouseRegion(
-                onEnter: (_) => setState(() => _hoveredIndex = index),
-                onExit: (_) => setState(() => _hoveredIndex = null),
-                child: GestureDetector(
-                  onTap: () {
-                    SystemSound.play(SystemSoundType.click);
-                    HapticFeedback.lightImpact();
-                    widget.onTap(index);
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeInOut,
-                    margin: isSelected 
-                        ? const EdgeInsets.symmetric(horizontal: 1, vertical: 2) 
-                        : EdgeInsets.zero,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFFAFAFA) 
-                          : isHovered
-                              ? const Color(0xFF9E8ED4).withOpacity(0.4)
-                              : Colors.transparent,
-                      borderRadius: isSelected ? BorderRadius.circular(6) : BorderRadius.zero,
-                      border: isSelected
-                          ? Border.all(color: const Color(0xFF4A3A85), width: 3)
-                          : Border(
-                              right: BorderSide(
-                                color: index == 4 ? Colors.transparent : const Color(0xFF4A3A85).withOpacity(0.3),
-                                width: 1.5,
-                              ),
-                            ),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  SystemSound.play(SystemSoundType.click);
+                  HapticFeedback.lightImpact();
+                  onTap(index);
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Dynamic scaling icon focus animation pass
+                    AnimatedScale(
+                      scale: isSelected ? 1.15 : 1.0,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutBack,
+                      child: Icon(
+                        _icons[index],
+                        color: isSelected ? const Color(0xFFB1A5E3) : const Color(0xFF6E5D9E),
+                        size: 28,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (isSelected)
-                              const Text(
-                                "◀ ",
-                                style: TextStyle(
-                                  fontFamily: 'PressStart2P',
-                                  color: Color(0xFF4A3A85),
-                                  fontSize: 7,
-                                ),
-                              ),
-                            Icon(
-                              item['icon'] as IconData,
-                              color: const Color(0xFF4A3A85),
-                              size: isSelected ? 34 : 30, 
+                    const SizedBox(height: 6),
+                    // Active status indicator pip dot
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      width: isSelected ? 6 : 0,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB1A5E3),
+                        shape: BoxShape.rectangle, // Keeps the pixel-art block identity
+                        boxShadow: [
+                          if (isSelected)
+                            const BoxShadow(
+                              color: Color(0xFFB1A5E3),
+                              blurRadius: 6,
+                              spreadRadius: 1,
                             ),
-                            if (isSelected)
-                              const Text(
-                                " ▶",
-                                style: TextStyle(
-                                  fontFamily: 'PressStart2P',
-                                  color: Color(0xFF4A3A85),
-                                  fontSize: 7,
-                                ),
-                              ),
-                          ],
-                        ),
-                        if (isSelected) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            item['label'] as String,
-                            style: const TextStyle(
-                              fontFamily: 'PressStart2P',
-                              color: Color(0xFF4A3A85),
-                              fontSize: 5.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ]
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             );

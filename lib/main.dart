@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart'; // REQUIRED: Imports the hardware restart engine
 import 'services/database_service.dart';
 import 'services/music_service.dart'; // Handles your background soundtrack configurations
 import 'screens/loading_screen.dart'; 
 
 void main() async {
-  // 1. Ensure the Flutter framework is ready
+  // 1. Ensure the Flutter framework structural components are fully ready
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 2. Start the App Immediately
-  runApp(const EduQuest());
+  // 2. FIXED: Wrapped the root application inside Phoenix to enable 5-minute cold restarts
+  runApp(
+    Phoenix(
+      child: const EduQuest(),
+    ),
+  );
 
-  // 3. Delayed Light Setup Work
+  // 3. Delayed Light Setup Work for Offline Isar Sandboxes
   Future.delayed(const Duration(milliseconds: 1000), () async {
     try {
       await DatabaseService.initialize();
@@ -33,7 +38,7 @@ class _EduQuestState extends State<EduQuest> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    // Register global OS lifecycle listener
+    // Register global OS lifecycle listener links
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -53,9 +58,9 @@ class _EduQuestState extends State<EduQuest> with WidgetsBindingObserver {
       BackgroundMusic.pause(); // Instantly stops the audio track on a native system level
       debugPrint("GLOBAL AUDIO GUARD: App hidden via physical button action. Music silenced.");
     } 
-    // 2. FIXED: Triggers the exact millisecond the player returns to the EduQuest screen window
+    // 2. Triggers the exact millisecond the player returns to the EduQuest screen window
     else if (state == AppLifecycleState.resumed) {
-      BackgroundMusic.resume(); // FIXED: Uncommented this line so the track resumes instantly!
+      BackgroundMusic.resume(); // Resumes the background loop right where it left off
       debugPrint("GLOBAL AUDIO GUARD: Player returned to EduQuest focus. Music resumed.");
     }
   }
@@ -68,6 +73,7 @@ class _EduQuestState extends State<EduQuest> with WidgetsBindingObserver {
       theme: ThemeData(
         primarySwatch: Colors.purple,
       ),
+      // FIXED: Uses the Phoenix context controller to enable full system rebirthing
       home: const EduQuestSplashScreen(), 
     );
   }

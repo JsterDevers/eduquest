@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'signup_page.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // FIXED: Imported local data preferences core
+import 'login_choice_page.dart'; // FIXED: Linked your choice route path file
+import 'home_page.dart'; // FIXED: Linked your home dashboard view file
 import '../services/music_service.dart'; 
 
 class StartAdventurePage extends StatefulWidget {
@@ -18,7 +20,7 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
   void initState() {
     super.initState();
 
-    // Perfect: Manually triggers the looping background audio right as the screen builds
+    // SEAMLESS AUDIO ENGAGEMENT: Manually triggers the looping background audio right as the screen builds
     BackgroundMusic.play();
 
     _floatController = AnimationController(
@@ -39,13 +41,32 @@ class _StartAdventurePageState extends State<StartAdventurePage> with TickerProv
     super.dispose();
   }
 
-  void _handleStart() {
+  Future<void> _handleStart() async {
     SystemSound.play(SystemSoundType.click);
     HapticFeedback.mediumImpact();
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SignupPage()),
-    );
+
+    // 1. Open the phone's native flash memory storage layer
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+    // 2. Query the login switch state flag (Defaults to false if not found)
+    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (!mounted) return;
+
+    // 3. DYNAMIC USER ROUTING TRACER:
+    if (isLoggedIn) {
+      debugPrint("ADVENTURE CORE: Active player matched. Synchronizing right to Dashboard!");
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      debugPrint("ADVENTURE CORE: No active session located. Presenting login choice menu entries.");
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginChoicePage()), // Routes cleanly to your choice options
+      );
+    }
   }
 
   @override

@@ -16,6 +16,8 @@ dependencies:
   isar: ^3.1.0+1              # The high-speed NoSQL database
   isar_flutter_libs: ^3.1.0+1 # Required binaries for Android/iOS
   path_provider: ^2.1.2       # Finds the correct storage path on the phone
+  shared_preferences: ^2.3.5 # Adds local storage preferences tracking
+  flutter_phoenix: ^1.1.1 # APPLIED: Allows our code to force an absolute native hardware app restart
 
   # --- OFFLINE AI & UTILS ---
   flutter_gemma: ^0.15.1      # On-device LLM generation engine for local execution
@@ -66,6 +68,7 @@ flutter:
     - assets/hero_mage.png
     - assets/library.png
     - assets/bg2_1.png
+    - assets/eduquest_banner.png
     - assets/PressStart2P.ttf
     - assets/Startupsound.mp3
     - assets/start to login music.mp3
