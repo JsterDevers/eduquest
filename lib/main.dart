@@ -8,22 +8,21 @@ void main() async {
   // 1. Ensure the Flutter framework structural components are fully ready
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 2. FIXED: Wrapped the root application inside Phoenix to enable 5-minute cold restarts
+  // 2. FIXED PERMANENTLY: Await the database initialization BEFORE booting the UI.
+  // This completely stops the Main Thread from freezing up when bringing the app from the background.
+  try {
+    await DatabaseService.initialize();
+    debugPrint("DATABASE ENGINE: Isar sandbox initialized cleanly before boot.");
+  } catch (e) {
+    debugPrint("DATABASE CRITICAL ERROR: $e");
+  }
+
+  // 3. Start the application safely now that all background services are fully operational
   runApp(
     Phoenix(
       child: const EduQuest(),
     ),
   );
-
-  // 3. Delayed Light Setup Work for Offline Isar Sandboxes
-  Future.delayed(const Duration(milliseconds: 1000), () async {
-    try {
-      await DatabaseService.initialize();
-      debugPrint("Database initialized successfully.");
-    } catch (e) {
-      debugPrint("Database initialization error: $e");
-    }
-  });
 }
 
 class EduQuest extends StatefulWidget {
@@ -58,10 +57,18 @@ class _EduQuestState extends State<EduQuest> with WidgetsBindingObserver {
       BackgroundMusic.pause(); // Instantly stops the audio track on a native system level
       debugPrint("GLOBAL AUDIO GUARD: App hidden via physical button action. Music silenced.");
     } 
-    // 2. Triggers the exact millisecond the player returns to the EduQuest screen window
+    // 2. FIXED: Wrapped inside a non-blocking asynchronous microtask frame callback channel.
+    // This allows Android to restore the finger-touch event queue instantly upon returning, 
+    // spinning up your audio drivers in the background background milliseconds later.
     else if (state == AppLifecycleState.resumed) {
-      BackgroundMusic.resume(); // Resumes the background loop right where it left off
-      debugPrint("GLOBAL AUDIO GUARD: Player returned to EduQuest focus. Music resumed.");
+      Future.microtask(() async {
+        try {
+          await BackgroundMusic.resume(); 
+          debugPrint("GLOBAL AUDIO GUARD: Player returned to EduQuest focus. Music resumed asynchronously.");
+        } catch (e) {
+          debugPrint("AUDIO RESUME ERROR: $e");
+        }
+      });
     }
   }
 
@@ -73,7 +80,7 @@ class _EduQuestState extends State<EduQuest> with WidgetsBindingObserver {
       theme: ThemeData(
         primarySwatch: Colors.purple,
       ),
-      // FIXED: Uses the Phoenix context controller to enable full system rebirthing
+      // Uses the Phoenix context controller to enable full system rebirthing
       home: const EduQuestSplashScreen(), 
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart'; // REQUIRED: Hooks up the rebirth control channel trigger
+import 'package:flutter_phoenix/flutter_phoenix.dart'; // RETAINED: Controls 5-minute cold restart rebirth loops
 import 'study_methods.dart';
 import 'study_hub.dart';
 import 'calender.dart'; 
@@ -15,7 +15,6 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-// FIXED: Added WidgetsBindingObserver back to monitor background pause/resume timers
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   int _currentIndex = 2; // Default to Home Dashboard (Index 2)
   DateTime? _backgroundTimeMarker; // Tracks background sleep timestamps
@@ -31,21 +30,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // Start listening to system sleep cycles
+    WidgetsBinding.instance.addObserver(this); // Hook app state observer up to native system lines
     BackgroundMusic.stop(); // Safe cut background loop track on landing page
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // Dismantle observer link to avoid memory leak footprints
+    WidgetsBinding.instance.removeObserver(this); // Dismantle observer linkages safely
     super.dispose();
   }
 
-  // FIXED: Handles automatic 5-minute cold restart background lifecycle checks
+  // FIXED: Handles non-blocking background lifecycle check calculations
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      // User minimized the app -> Mark the exact exit time stamp
       _backgroundTimeMarker = DateTime.now();
       debugPrint("LIFECYCLE ENGINE: App suspended at $_backgroundTimeMarker");
     } 
@@ -53,20 +51,23 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       debugPrint("LIFECYCLE ENGINE: Player brought app back to focus.");
       
-      if (_backgroundTimeMarker != null) {
-        // Calculate total duration spent idle in the phone's background tray
-        final durationSpent = DateTime.now().difference(_backgroundTimeMarker!);
-        
-        // 5 Minutes Hard Reset Limit Check (5 minutes = 300 seconds)
-        if (durationSpent.inSeconds >= 300) {
-          debugPrint("LIFECYCLE SECURITY: Game idle for 5+ minutes. Initializing COLD RESTART.");
-          if (mounted) {
-            Phoenix.rebirth(context); // Triggers absolute system rebirth pass!
+      // FIXED: Wrap calculations inside a post-frame callback thread loop
+      // This forces Android to restore your touch stream FIRST, then calculate time differences right after!
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_backgroundTimeMarker != null) {
+          final durationSpent = DateTime.now().difference(_backgroundTimeMarker!);
+          
+          // 5 Minutes Hard Reset Limit Check (300 seconds)
+          if (durationSpent.inSeconds >= 300) {
+            debugPrint("LIFECYCLE SECURITY: Game idle for 5+ minutes. Initializing COLD RESTART.");
+            if (mounted) {
+              Phoenix.rebirth(context); // Triggers absolute system rebirth pass fresh from splash!
+            }
+          } else {
+            debugPrint("LIFECYCLE ENGINE: Welcome back! Quick suspension duration: ${durationSpent.inSeconds}s");
           }
-        } else {
-          debugPrint("LIFECYCLE ENGINE: Welcome back! Quick return duration: ${durationSpent.inSeconds}s");
         }
-      }
+      });
     }
   }
 
@@ -86,6 +87,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 filterQuality: FilterQuality.none, 
               ),
             ),
+            
             Positioned.fill(
               child: IndexedStack(
                 index: _currentIndex,
@@ -93,19 +95,31 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               ),
             ),
 
-            // FIXED: Full-width banner layout spanning perfectly from left to right edge
+            // FIXED REFERENCE PLATFORM LAYOUT
             Positioned(
               top: 0,
               left: 0,
               right: 0,
               child: SafeArea(
-                bottom: false, // Prevents pushing layout blocks from the bottom chin
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Image.asset(
-                    'assets/eduquest_banner.png',
-                    fit: BoxFit.contain, // Centered and scaled perfectly edge-to-edge
-                  ),
+                bottom: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // =========================================================================
+                    // 🪙 FUTURE METRICS CONTAINER PLATFORM
+                    // TODO: Drop your Row widget here later for Level, Coins, and Flame Points!
+                    // =========================================================================
+                    const SizedBox(height: 38), // Shrunk from 52 to 38 to shift the banner upwards slightly
+
+                    // EDUQUEST MAIN TITLE BANNER LAYER
+                    SizedBox(
+                      width: double.infinity, // Spans perfectly from left to right edge
+                      child: Image.asset(
+                        'assets/eduquest_banner.png',
+                        fit: BoxFit.fitWidth, // Auto-sizes layout height dynamically
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -113,7 +127,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
       ),
       
-      // Full-width edge-to-edge redesigned professional navigation bar
+      // REDESIGNED: Sleek, high-fidelity professional RPG navbar widget 
       bottomNavigationBar: EduQuestNavbar(
         currentIndex: _currentIndex,
         onTap: (newIndex) {
@@ -175,7 +189,6 @@ class DashboardView extends StatelessWidget {
   }
 }
 
-// REDESIGNED: Sleek, high-fidelity professional RPG navbar widget 
 class EduQuestNavbar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;

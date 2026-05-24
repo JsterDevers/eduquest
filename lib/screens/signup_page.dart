@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
-import 'package:shared_preferences/shared_preferences.dart'; // FIXED: Imported the local session storage bridge
+import 'package:shared_preferences/shared_preferences.dart'; // Local session storage bridge
 import 'dart:math';
 import '../services/database_service.dart';
 import '../models/player.dart';
@@ -578,10 +578,13 @@ class _SignupPageState extends State<SignupPage> {
             onPressed: () async {
               _playInteractionEffect();
               
-              // FIXED: Writes the permanent auto-login sync key flag into the player's mobile hardware memory bank
+              // Open native system cache
               final SharedPreferences prefs = await SharedPreferences.getInstance();
+              
+              // FIXED PERMANENTLY: Writes flags cleanly down memory lines
               await prefs.setBool('isLoggedIn', true);
-              debugPrint("SESSION ENGINE: Account registered. Sync flag locked to TRUE.");
+              await prefs.setBool('isFirstTimeUser', false); // FIXED: Prevents registration loops
+              debugPrint("SESSION ENGINE: Account registered. Synchronization parameters locked.");
 
               if (context.mounted) {
                 Navigator.pushAndRemoveUntil(
