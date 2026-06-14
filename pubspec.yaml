@@ -70,10 +70,34 @@ flutter:
     - assets/bg2_1.png
     - assets/eduquest_banner.png
     - assets/Profile.png
+    - assets/streak.png
+    - assets/coin.png
+    - assets/exp.png
+    - assets/pixel_version/body_skin/Skin1.png
+    - assets/pixel_version/body_skin/Skin2.png
+    - assets/pixel_version/body_skin/Skin3.png
+    - assets/pixel_version/body_skin/clothes/clothes1.png
+    - assets/pixel_version/body_skin/clothes/clothes2.png
+    - assets/pixel_version/body_skin/clothes/clothes3.png
+    - assets/pixel_version/body_skin/clothes/eyes/eyes1.png
+    - assets/pixel_version/body_skin/clothes/eyes/eyes2.png
+    - assets/pixel_version/body_skin/clothes/eyes/eyes3.png
+    - assets/pixel_version/body_skin/clothes/eyes/eyes4.png
+    - assets/pixel_version/body_skin/clothes/eyes/eyes5.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/hair1.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/hair2.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/hair3.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/hair4.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/hair5.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/mouth/mouth1.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/mouth/mouth2.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/mouth/mouth3.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/mouth/mouth4.png
+    - assets/pixel_version/body_skin/clothes/eyes/hair/mouth/mouth5.png
     - assets/PressStart2P.ttf
     - assets/Startupsound.mp3
     - assets/start to login music.mp3
-    - assets/gemma_brain.task  
+    # - assets/gemma_brain.task  
 
   # --- FONTS REGISTRY ---
   fonts:
