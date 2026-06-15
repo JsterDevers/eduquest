@@ -17,7 +17,7 @@ dependencies:
   isar_flutter_libs: ^3.1.0+1 # Required binaries for Android/iOS
   path_provider: ^2.1.2       # Finds the correct storage path on the phone
   shared_preferences: ^2.3.5 # Adds local storage preferences tracking
-  flutter_phoenix: ^1.1.1 # APPLIED: Allows our code to force an absolute native hardware app restart
+  
 
   # --- OFFLINE AI & UTILS ---
   flutter_gemma: ^0.15.1      # On-device LLM generation engine for local execution
@@ -73,6 +73,10 @@ flutter:
     - assets/streak.png
     - assets/coin.png
     - assets/exp.png
+    - assets/header_calendar.png
+    - assets/study_method.png
+    - assets/study_hub.png
+    - assets/pomodoro_timer.png
     - assets/pixel_version/body_skin/Skin1.png
     - assets/pixel_version/body_skin/Skin2.png
     - assets/pixel_version/body_skin/Skin3.png

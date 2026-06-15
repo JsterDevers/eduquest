@@ -62,103 +62,102 @@ class PlayerStatsDisplay extends StatelessWidget {
         double screenW = MediaQuery.of(context).size.width;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // ===== LEVEL + XP OVERLAP =====
-              SizedBox(
-                width: screenW * 0.42,
-                height: 26,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // XP BAR
-                    Positioned.fill(
-                      child: Container(
-                        height: 26,
-                        margin: const EdgeInsets.only(left: 18),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF16202E),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Stack(
-                          children: [
-                            FractionallySizedBox(
-                              alignment: Alignment.centerLeft,
-                              widthFactor: xpProgress,
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Color.fromARGB(255, 113, 6, 213),
+              // ===== LEVEL + XP OVERLAP (FIXED: Wrapped in Expanded so it handles the layout flexibility) =====
+              Expanded(
+                child: SizedBox(
+                  height: 26,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // XP BAR
+                      Positioned.fill(
+                        child: Container(
+                          height: 26,
+                          margin: const EdgeInsets.only(left: 18),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF16202E),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Stack(
+                            children: [
+                              FractionallySizedBox(
+                                alignment: Alignment.centerLeft,
+                                widthFactor: xpProgress,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Color.fromARGB(255, 113, 6, 213),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Center(
-                              child: Text(
-                                '${stats.xpCurrent}/${stats.xpTarget}',
-                                style: const TextStyle(
-                                  fontFamily: 'PressStart2P',
-                                  fontSize: 8,
-                                  color: Colors.white,
+                              Center(
+                                child: Text(
+                                  '${stats.xpCurrent}/${stats.xpTarget}',
+                                  style: const TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 8,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
 
-                    // LEVEL (overlapping)
-                    Positioned(
-                      left: 0,
-                      top: -2,
-                      child: Container(
-                        width: screenW * 0.10,
-                        height: 31,
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 113, 6, 213),
-                          border: Border.all(
-                            color: const Color.fromARGB(255, 57, 0, 84),
-                            width: 1.5,
+                      // LEVEL BADGE
+                      Positioned(
+                        left: 0,
+                        top: -2,
+                        child: Container(
+                          width: screenW * 0.10,
+                          height: 31,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 113, 6, 213),
+                            border: Border.all(
+                              color: const Color.fromARGB(255, 57, 0, 84),
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${stats.level}',
-                            style: const TextStyle(
-                              fontFamily: 'PressStart2P',
-                              fontSize: 12,
-                              color: Colors.white,
+                          child: Center(
+                            child: Text(
+                              '${stats.level}',
+                              style: const TextStyle(
+                                fontFamily: 'PressStart2P',
+                                fontSize: 12,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
-              const SizedBox(width: 6),
+              const SizedBox(width: 16), // Clear gap spacing separating bars from icons
 
-              // ===== COINS =====
+              // ===== COINS (FIXED: Removed Expanded so it stays tight against the streak) =====
               _hudStat(
                 icon: 'assets/coin.png',
-                width: screenW * 0.28,
+                width: screenW * 0.24, 
                 child: _fitText(stats.coins.toString()),
               ),
 
-              const SizedBox(width: 12),
+              const SizedBox(width: 16), // Spacing between coin box and streak box
 
               // ===== STREAK =====
-              Padding(
-                padding: const EdgeInsets.only(right: 10), // adjust value here
-                child: _hudStat(
-                  icon: 'assets/streak.png',
-                  width: screenW * 0.18,
-                  child: _fitText(stats.streak.toString()),
-                ),
+              _hudStat(
+                icon: 'assets/streak.png',
+                width: screenW * 0.16, 
+                child: _fitText(stats.streak.toString()),
               ),
+              
+              const SizedBox(width: 8), // Tiny padding margin safe zone on the right edge
             ],
           ),
         );

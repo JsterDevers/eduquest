@@ -33,7 +33,7 @@ class BadgeItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: EdgeInsets.all(compact ? 14 : 16),
+          padding: EdgeInsets.all(compact ? 12 : 16), // FIXED: Shrunk compact padding down from 14 to 12
           decoration: BoxDecoration(
             color: acquired ? const Color(0xFFFFF6EA) : const Color(0xFFF5F3F8),
             borderRadius: BorderRadius.circular(18),
@@ -50,7 +50,7 @@ class BadgeItem extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: compact ? 26 : 28,
+                size: compact ? 24 : 28, // FIXED: Scaled size down from 26 to 24 for compact layout comfort
                 color: acquired
                     ? const Color(0xFFDD6B2B)
                     : const Color(0xFFB8B3D4),
@@ -61,13 +61,13 @@ class BadgeItem extends StatelessWidget {
                     color: Colors.black.withOpacity(0.3),
                     shape: BoxShape.circle,
                   ),
-                  width: compact ? 26 : 28,
-                  height: compact ? 26 : 28,
+                  width: compact ? 24 : 28,
+                  height: compact ? 24 : 28,
                 ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8), // Shrunk spacer gap from 10 to 8
         SizedBox(
           width: 80,
           child: Column(
@@ -78,7 +78,7 @@ class BadgeItem extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
-                  fontSize: 8,
+                  fontSize: compact ? 7 : 8, // FIXED: Scaled font down based on layout status
                   color: acquired
                       ? const Color(0xFF423A75)
                       : const Color(0xFF8F8BA8),
@@ -92,7 +92,7 @@ class BadgeItem extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'PressStart2P',
-                    fontSize: 7,
+                    fontSize: compact ? 6 : 7, // FIXED: Scaled trailing font down matching layout status
                     color: acquired
                         ? const Color(0xFF423A75)
                         : const Color(0xFF8F8BA8),
@@ -151,7 +151,7 @@ class ProfileBadges extends StatelessWidget {
         ),
         GridView.count(
           crossAxisCount: 4,
-          childAspectRatio: 0.8,
+          childAspectRatio: 0.75, // FIXED: Adjusted ratio slightly from 0.8 to provide vertical buffer space
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           shrinkWrap: true,
@@ -183,71 +183,79 @@ class ProfileBadges extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 50,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const Text(
-                'All Badges',
-                style: TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF3E2C78),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 4,
-                  childAspectRatio: 0.8,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  children: List.generate(allBadges!.length, (index) {
-                    final badge = allBadges![index];
-                    final isAcquired = index < badges.length;
-                    return BadgeItem(
-                      icon: badge.icon,
-                      label: badge.label,
-                      acquired: isAcquired,
-                    );
-                  }),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A3EA8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: const Text(
-                    'Close',
-                    style: TextStyle(
-                      fontFamily: 'PressStart2P',
-                      fontSize: 8,
-                      color: Color.fromARGB(255, 255, 255, 255),
+        // FIXED: Wrap content inside a FractionallySizedBox to enforce clear safety layout boundaries
+        return FractionallySizedBox(
+          heightFactor: 0.75, // Restricts modal from breaking system container heights on small devices
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 50,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.black12,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
-              ),
-            ],
+                const Text(
+                  'All Badges',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF3E2C78),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 4,
+                    childAspectRatio: 0.72, // FIXED: Adjusted down from 0.8 to give split label texts absolute sizing room
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    physics: const BouncingScrollPhysics(),
+                    children: List.generate(allBadges!.length, (index) {
+                      final badge = allBadges![index];
+                      final isAcquired = index < badges.length;
+                      return BadgeItem(
+                        icon: badge.icon,
+                        label: badge.label,
+                        compact: true, // FIXED: Explicitly added true so it matches layout scaling profiles inside modal grid
+                        acquired: isAcquired,
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6A3EA8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 8,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

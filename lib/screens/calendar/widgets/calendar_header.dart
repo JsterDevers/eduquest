@@ -18,11 +18,17 @@ class CalendarHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Padding(padding: EdgeInsets.all(0), child: PlayerStatsDisplay()),
+        const Padding(
+          padding: EdgeInsets.all(0), 
+          child: PlayerStatsDisplay(),
+        ),
+        // FIXED FORMAT & SIZING: Removed height constraint and changed fit to fitWidth
         SizedBox(
-          height: 75,
           width: double.infinity,
-          child: Image.asset(imageAsset, fit: BoxFit.cover),
+          child: Image.asset(
+            imageAsset, 
+            fit: BoxFit.fitWidth, // Scales perfectly edge-to-edge matching your home and study methods banners!
+          ),
         ),
       ],
     );

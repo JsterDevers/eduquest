@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart'; // REQUIRED: Imports the hardware restart engine
 import 'services/database_service.dart';
 import 'services/music_service.dart'; // Handles your background soundtrack configurations
 import 'screens/loading_screen.dart'; 
@@ -19,9 +18,7 @@ void main() async {
 
   // 3. Start the application safely now that all background services are fully operational
   runApp(
-    Phoenix(
-      child: const EduQuest(),
-    ),
+    const EduQuest(),
   );
 }
 
@@ -80,7 +77,7 @@ class _EduQuestState extends State<EduQuest> with WidgetsBindingObserver {
       theme: ThemeData(
         primarySwatch: Colors.purple,
       ),
-      // Uses the Phoenix context controller to enable full system rebirthing
+      // Boots straight into your pixel-art entry sequence frame
       home: const EduQuestSplashScreen(), 
     );
   }
