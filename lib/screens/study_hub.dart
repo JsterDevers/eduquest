@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/player_stats_display.dart'; // REQUIRED: Imports the scrolling stats bar widget
-import './study_methods/pomodoro_timer.dart'; // REQUIRED: Imports your pomodoro timer view engine
+import '../widgets/player_stats_display.dart'; 
+import 'study_methods/pomodoro_timer.dart'; 
 
-class StudyHubPage extends StatelessWidget {
+class StudyHubPage extends StatefulWidget {
   const StudyHubPage({super.key});
 
   @override
+  State<StudyHubPage> createState() => _StudyHubPageState();
+}
+
+class _StudyHubPageState extends State<StudyHubPage> {
+  bool _showTimerPage = false; // Tracks whether to display the tile grid or the timer in place
+
+  @override
   Widget build(BuildContext context) {
+    // FIXED: If toggled via the Practice Test card, render the timer directly inside this viewport context
+    if (_showTimerPage) {
+      return WillPopScope(
+        onWillPop: () async {
+          setState(() => _showTimerPage = false);
+          return false;
+        },
+        child: PomodoroTimerPage(
+          onBack: () {
+            setState(() {
+              _showTimerPage = false;
+            });
+          },
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.transparent, // Inherits global homepage background asset pattern cleanly
       body: SafeArea(
@@ -17,14 +41,14 @@ class StudyHubPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch, // Forces banner elements to span fully edge-to-edge
             children: [
-              // 1. PLAYER STATS WIDGET: Placed outside of padding so it aligns exactly like your other views
+              // 1. PLAYER STATS WIDGET
               const PlayerStatsDisplay(),
 
               // 2. FULL-WIDTH STUDY HUB HEADER BANNER ASSET
               SizedBox(
                 width: double.infinity,
                 child: Image.asset(
-                  'assets/study_hub.png', // Points verbatim to your study hub banner file name
+                  'assets/study_hub.png', 
                   fit: BoxFit.fitWidth, 
                 ),
               ),
@@ -34,7 +58,7 @@ class StudyHubPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
                 child: Column(
                   children: [
-                    // ROW 1: FLASHCARDS & PRACTICE TEST (CRITICAL: 'const' removed to allow page parameters)
+                    // ROW 1: FLASHCARDS & PRACTICE TEST
                     Row(
                       children: [
                         const Expanded(
@@ -52,7 +76,12 @@ class StudyHubPage extends StatelessWidget {
                             icon: Icons.menu_book_rounded,
                             topColor: const Color(0xFFBD49CC),
                             bottomColor: const Color(0xFF81268C),
-                            targetPage: const PomodoroTimerPage(), // Linked directly to your standalone timer page setup!
+                            onTap: () {
+                              // FIXED: Triggers the inline tab view toggle state seamlessly!
+                              setState(() {
+                                _showTimerPage = true;
+                              });
+                            },
                           ),
                         ),
                       ],
@@ -83,7 +112,7 @@ class StudyHubPage extends StatelessWidget {
                       ],
                     ),
                     
-                    const SizedBox(height: 120), // Bottom spacer padding buffer so navbar never overlaps cards
+                    const SizedBox(height: 120), // Bottom spacer padding buffer
                   ],
                 ),
               ),
@@ -101,7 +130,7 @@ class InteractiveHubButton extends StatefulWidget {
   final IconData icon;
   final Color topColor;
   final Color bottomColor;
-  final Widget? targetPage; // Optional destination page parameter link
+  final VoidCallback? onTap; 
 
   const InteractiveHubButton({
     super.key,
@@ -109,7 +138,7 @@ class InteractiveHubButton extends StatefulWidget {
     required this.icon,
     required this.topColor,
     required this.bottomColor,
-    this.targetPage,
+    this.onTap,
   });
 
   @override
@@ -126,7 +155,7 @@ class _InteractiveHubButtonState extends State<InteractiveHubButton> with Single
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 60), // Instantaneous reaction response snap
+      duration: const Duration(milliseconds: 60), 
     );
     
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
@@ -162,19 +191,14 @@ class _InteractiveHubButtonState extends State<InteractiveHubButton> with Single
         onTapCancel: () => _onPressUp(),
         onTap: () {
           debugPrint("STUDY HUB: Opened panel target -> ${widget.title}");
-          
-          // FIXED: NAVIGATION ROUTER ENGINE (Fires immediately when targetPage parameter matches)
-          if (widget.targetPage != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => widget.targetPage!),
-            );
+          if (widget.onTap != null) {
+            widget.onTap!();
           }
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 60),
           height: 135,
           decoration: BoxDecoration(
-            // Smooth gradient that copies your target image lighting setup perfectly
             gradient: LinearGradient(
               colors: [widget.topColor, widget.bottomColor],
               begin: Alignment.topCenter,
@@ -182,11 +206,10 @@ class _InteractiveHubButtonState extends State<InteractiveHubButton> with Single
             ),
             borderRadius: BorderRadius.circular(24), 
             border: Border.all(
-              color: const Color(0xFF150D33), // Deep dark framing outline stroke
+              color: const Color(0xFF150D33), 
               width: 4,
             ),
             boxShadow: [
-              // Retains flat 3D shadow depth; vanishes completely when pressed down!
               if (!_isPressed)
                 const BoxShadow(
                   color: Color(0x77000000),
@@ -198,7 +221,6 @@ class _InteractiveHubButtonState extends State<InteractiveHubButton> with Single
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // GRADIENT GLOW RAYS OVERLAY EFFECT
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -207,8 +229,6 @@ class _InteractiveHubButtonState extends State<InteractiveHubButton> with Single
                   ),
                 ),
               ),
-
-              // CENTRAL ELEMENT ICON MODEL ILLUSTRATION
               Positioned(
                 top: 14,
                 child: Container(
@@ -231,8 +251,6 @@ class _InteractiveHubButtonState extends State<InteractiveHubButton> with Single
                   ),
                 ),
               ),
-
-              // RETRO TYPE STYLED BOTTOM HEADER FOOTER TEXT
               Positioned(
                 bottom: 14,
                 left: 6,
@@ -242,7 +260,7 @@ class _InteractiveHubButtonState extends State<InteractiveHubButton> with Single
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   style: const TextStyle(
-                    fontFamily: 'PressStart2P', // Maintains your 8-bit visual identity signature
+                    fontFamily: 'PressStart2P', 
                     fontSize: 8,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,

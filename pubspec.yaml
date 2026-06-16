@@ -77,6 +77,8 @@ flutter:
     - assets/study_method.png
     - assets/study_hub.png
     - assets/pomodoro_timer.png
+    - assets/study_method_three.png
+    - assets/create_repetition.png
     - assets/pixel_version/body_skin/Skin1.png
     - assets/pixel_version/body_skin/Skin2.png
     - assets/pixel_version/body_skin/Skin3.png
